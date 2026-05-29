@@ -4,19 +4,19 @@
 
 A multimodal deep learning system that simultaneously detects AI-generated text, fake images, and deepfake videos on Filipino social media (Facebook, TikTok, X), delivered as a browser extension and web interface with Explainable AI outputs.
 
-> Research project for the Next Gen Start-up Competition 2026 — Mapúa University, Makati Campus (June 18, 2026).
+> Research project for the Next Gen Start-up Competition 2026 - Mapúa University, Makati Campus (June 18, 2026).
 > Authors: Lance Adrian D. Acal · Jericho G. Delos Reyes · Lee Adrian D. Noroña · Christian B. Valenzuela.
 
 ---
 
 ## Overview
 
-PRISM scans social media content in real time and flags disinformation. Three independent forensic modules — text, image, and video — each produce a confidence score and an explainable output. These are combined at the final stage into a single credibility verdict via **late fusion**.
+PRISM scans social media content in real time and flags disinformation. Three independent forensic modules - text, image, and video - each produce a confidence score and an explainable output. These are combined at the final stage into a single credibility verdict via **late fusion**.
 
 | Module | What it detects | Model | Explainability |
 |---|---|---|---|
-| **Text** | Taglish (Tagalog + English) AI-generated / fake news captions | Fine-tuned Filipino BERT (DistilBERT-Tagalog) | LIME + Anchors — word/phrase-level highlighting |
-| **Image** | GAN- and diffusion-generated / manipulated images | CNN-ViT hybrid classifier | Class Activation Maps (CAM) — heatmaps over manipulated regions |
+| **Text** | Taglish (Tagalog + English) AI-generated / fake news captions | Fine-tuned Filipino BERT (DistilBERT-Tagalog) | LIME + Anchors - word/phrase-level highlighting |
+| **Image** | GAN- and diffusion-generated / manipulated images | CNN-ViT hybrid classifier | Class Activation Maps (CAM) - heatmaps over manipulated regions |
 | **Video** | Deepfakes via spatial pixel artifacts + temporal inconsistencies | Frame-level forensic engine | Frame/region-level artifact highlighting |
 
 ---
@@ -26,13 +26,13 @@ PRISM scans social media content in real time and flags disinformation. Three in
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  CLIENTS                                                          │
-│  • Browser Extension (Manifest V3, JS) — passive real-time scan  │
-│  • React Web App — manual content submission                     │
+│  • Browser Extension (Manifest V3, JS) - passive real-time scan  │
+│  • React Web App - manual content submission                     │
 └───────────────────────────────┬─────────────────────────────────┘
                                  │  media (text / image / video)
                                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  FastAPI — AI inference layer                                    │
+│  FastAPI - AI inference layer                                    │
 │  ┌──────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
 │  │ Text Module  │  │ Image Module │  │ Video Module           │ │
 │  │ DistilBERT-  │  │ CNN-ViT      │  │ Frame-level forensic   │ │
@@ -47,7 +47,7 @@ PRISM scans social media content in real time and flags disinformation. Three in
 └───────────────────────────────┬─────────────────────────────────┘
                                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Supabase — Postgres storage, auth, realtime, Edge Functions     │
+│  Supabase - Postgres storage, auth, realtime, Edge Functions     │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -125,13 +125,13 @@ npm run dev
 
 ### Supabase
 
-Use the Supabase CLI for local dev and migrations. Store all keys in environment variables — never commit them.
+Use the Supabase CLI for local dev and migrations. Store all keys in environment variables - never commit them.
 
 ---
 
 ## Evaluation
 
-- **Detection:** Precision, Recall, F1-score, Accuracy — via Confusion Matrix, compared against single-modality baselines.
+- **Detection:** Precision, Recall, F1-score, Accuracy - via Confusion Matrix, compared against single-modality baselines.
 - **Usability:** System Usability Scale (SUS) with social media users.
 - **Latency:** real-time thresholds on consumer hardware during active scrolling.
 
