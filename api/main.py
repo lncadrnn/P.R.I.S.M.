@@ -2,7 +2,7 @@
 PRISM FastAPI inference server.
 
 Run from the api/ directory:
-    uvicorn main:app --reload
+    python main.py
 
 Routes:
     GET  /health          → liveness check
@@ -96,3 +96,8 @@ async def scan(
         verdicts["text"] = None  # placeholder until text module is implemented
 
     return fuse(verdicts)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
