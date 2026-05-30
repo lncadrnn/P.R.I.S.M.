@@ -40,21 +40,17 @@ const PLATFORM = (() => {
 
 const PLATFORM_CONFIG = {
   facebook: {
-    // Feed stories / posts — "data-ad-preview" marks post body containers
-    rootSelector: [
-      '[data-pagelet^="FeedUnit"]',
-      '[data-testid="fbfeed_story"]',
-      "div[role='article']",
-    ].join(", "),
+    // Only target feed units — NOT Messenger chat, NOT groups sidebar.
+    // data-pagelet="FeedUnit_N" is Facebook's stable feed post identifier.
+    // Avoid div[role='article'] — it also matches Messenger messages.
+    rootSelector: '[data-pagelet^="FeedUnit"]',
     textSelectors: [
       '[data-ad-preview="message"]',
       "[data-testid='post_message']",
       "div[dir='auto'] > span",
-      ".x1iorvi4 span",
     ],
     imageSelectors: [
       "img[src*='fbcdn.net']",
-      "img[src*='facebook.com/photo']",
     ],
   },
 
@@ -204,9 +200,20 @@ function findAllPosts() {
  *
  * @param {Element} postEl  Post root element.
  */
+// CSS selectors for UI regions that should never be scanned
+const EXCLUDED_REGIONS = [
+  '[role="complementary"]',   // right sidebar (ads, suggestions)
+  '[aria-label="Chats"]',     // Messenger chat panel
+  '[data-pagelet="MercuryThreadlist"]',
+  '[data-pagelet^="ChatTab"]',
+].join(", ");
+
 function processPost(postEl) {
   // Skip already-processed posts.
   if (postEl.dataset.prismScanned === "true") return;
+
+  // Skip anything inside the Messenger chat panel or sidebar.
+  if (postEl.closest(EXCLUDED_REGIONS)) return;
 
   const postId = getOrAssignPostId(postEl);
   const text = extractText(postEl);
@@ -219,6 +226,15 @@ function processPost(postEl) {
     text: text || null,
     image_urls: imageUrls.length > 0 ? imageUrls : null,
   };
+
+  // Guard: if the extension was reloaded mid-session the runtime context is
+  // invalidated. Detect this early and stop rather than throw an uncaught error.
+  try {
+    if (!chrome.runtime?.id) return;
+  } catch (_) {
+    stopScanner();
+    return;
+  }
 
   // Attach a "scanning" placeholder overlay while we wait.
   if (typeof window.prismOverlay !== "undefined") {
@@ -234,8 +250,11 @@ function processPost(postEl) {
     postId,
     payload,
   }).catch((err) => {
+    if (err.message?.includes("Extension context invalidated")) {
+      stopScanner();
+      return;
+    }
     console.warn("[PRISM] sendMessage failed for post", postId, err.message);
-    // Reset so the next observer pass can retry this post.
     postEl.dataset.prismScanned = "false";
   });
 }

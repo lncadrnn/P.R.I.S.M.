@@ -10,7 +10,7 @@
  */
 
 const API_BASE = "http://127.0.0.1:8000";
-const SCAN_ENDPOINT = `${API_BASE}/scan`;
+const SCAN_ENDPOINT = `${API_BASE}/scan/extension`;
 
 // In-memory deduplication map: hash -> Promise<verdict>
 // This prevents concurrent duplicate requests for the same post within a session.

@@ -74,6 +74,12 @@ class TextScanRequest(BaseModel):
     text: str
 
 
+class ExtensionScanRequest(BaseModel):
+    text: Optional[str] = None
+    image_urls: Optional[list[str]] = None
+    platform: Optional[str] = None
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -85,6 +91,43 @@ def health():
         "modules": {"image": "active", "text": "active", "video": "active"},
     }
 
+
+
+@app.post("/scan/extension", response_model=ScanResponse)
+async def scan_extension(body: ExtensionScanRequest):
+    """
+    JSON endpoint for the browser extension.
+    Accepts text and a list of image CDN URLs (already loaded in the browser).
+    Downloads the first usable image server-side and runs all available modules.
+    """
+    import httpx
+
+    verdicts: dict = {"image": None, "text": None, "video": None}
+
+    if body.text and body.text.strip():
+        verdicts["text"] = text_detector.predict(body.text.strip())
+
+    if body.image_urls:
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/124.0.0.0 Safari/537.36"
+            ),
+            "Referer": "https://www.facebook.com/",
+        }
+        for url in body.image_urls[:3]:
+            try:
+                async with httpx.AsyncClient(headers=headers, timeout=10, follow_redirects=True) as client:
+                    resp = await client.get(url)
+                if resp.status_code == 200 and resp.headers.get("content-type", "").startswith("image/"):
+                    img = Image.open(io.BytesIO(resp.content)).convert("RGB")
+                    verdicts["image"] = detector.predict(img)
+                    break
+            except Exception:
+                continue
+
+    return fuse(verdicts)
 
 
 @app.post("/scan/text", response_model=VerdictResponse)
