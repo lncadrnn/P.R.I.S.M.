@@ -1,6 +1,6 @@
 import styles from './VerdictCard.module.css'
 
-const LABELS = { fake: 'FAKE', real: 'REAL', unknown: '?' }
+const LABELS = { fake: 'FAKE', real: 'REAL', unknown: 'No Verdict' }
 const STUBS  = { text: 'No caption submitted', image: 'No image submitted', video: 'No video submitted' }
 
 // Non-color verdict cues so the verdict is legible without relying on red/green.
@@ -53,12 +53,22 @@ export default function VerdictCard({ result }) {
           <VerdictIcon cls={cls} />
           {LABELS[cls] ?? cls.toUpperCase()}
         </div>
-        <div className={styles.confidenceRow}>
-          <div className={styles.bar}>
-            <div className={`${styles.fill} ${styles[cls]}`} style={{ width: `${pct}%` }} />
+        {cls === 'unknown' ? (
+          <p className={styles.unknownNote}>
+            No conclusive verdict.
+            {explanation?.abstained?.length
+              ? ` The ${explanation.abstained.join(', ')} module${explanation.abstained.length > 1 ? 's' : ''} abstained (not trained yet).`
+              : ''}
+            {' '}Add a caption — the text model is trained and returns a real verdict.
+          </p>
+        ) : (
+          <div className={styles.confidenceRow}>
+            <div className={styles.bar}>
+              <div className={`${styles.fill} ${styles[cls]}`} style={{ width: `${pct}%` }} />
+            </div>
+            <span className={styles.confidencePct}>{pct}%</span>
           </div>
-          <span className={styles.confidencePct}>{pct}%</span>
-        </div>
+        )}
         {explanation?.modules_used?.length > 0 && (
           <div className={styles.meta}>
             <span>Based on:</span>
@@ -87,6 +97,22 @@ export default function VerdictCard({ result }) {
         </div>
       )}
 
+      {modules?.image?.explanation?.signals?.length > 0 && (
+        <div className={styles.why}>
+          <p className={styles.sectionLabelXai}>Image forensics signals</p>
+          <div className={styles.reasons}>
+            {modules.image.explanation.signals.map((s, i) => (
+              <div key={i} className={`${styles.reason} ${styles.sevLow}`}>
+                <p className={styles.reasonDetail}>{s}</p>
+              </div>
+            ))}
+          </div>
+          {modules.image.explanation.note && (
+            <p className={styles.whySummary}>{modules.image.explanation.note}</p>
+          )}
+        </div>
+      )}
+
       {modules?.text?.explanation?.summary && (
         <WhySection explanation={modules.text.explanation} />
       )}
@@ -99,22 +125,37 @@ export default function VerdictCard({ result }) {
 }
 
 function ModuleRow({ name, data, stub }) {
-  const pct = data ? Math.round(data.confidence * 100) : 0
-  const cls = data ? (['fake','real','unknown'].includes(data.label) ? data.label : 'unknown') : null
+  // Modality not submitted at all.
+  if (!data) {
+    return (
+      <div className={styles.moduleRow}>
+        <span className={styles.moduleKey}>{name}</span>
+        <span className={styles.moduleStub}>{stub}</span>
+      </div>
+    )
+  }
+
+  // Module ran but abstained — show why, not a fake 0% bar.
+  const scored = data.label === 'fake' || data.label === 'real'
+  if (!scored) {
+    return (
+      <div className={styles.moduleRow}>
+        <span className={styles.moduleKey}>{name}</span>
+        <span className={styles.moduleStub}>No conclusive signal</span>
+      </div>
+    )
+  }
+
+  const pct = Math.round(data.confidence * 100)
+  const cls = data.label
   return (
     <div className={styles.moduleRow}>
       <span className={styles.moduleKey}>{name}</span>
-      {data ? (
-        <>
-          <span className={`${styles.moduleLabel} ${styles[cls]}`}>{data.label.toUpperCase()}</span>
-          <div className={styles.moduleBar}>
-            <div className={`${styles.moduleBarFill} ${styles[cls]}`} style={{ width: `${pct}%` }} />
-          </div>
-          <span className={styles.moduleConf}>{pct}%</span>
-        </>
-      ) : (
-        <span className={styles.moduleStub}>{stub}</span>
-      )}
+      <span className={`${styles.moduleLabel} ${styles[cls]}`}>{data.label.toUpperCase()}</span>
+      <div className={styles.moduleBar}>
+        <div className={`${styles.moduleBarFill} ${styles[cls]}`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className={styles.moduleConf}>{pct}%</span>
     </div>
   )
 }

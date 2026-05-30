@@ -201,6 +201,18 @@ def _decode_image(raw: bytes) -> Image.Image:
 # Routes
 # ---------------------------------------------------------------------------
 
+@app.get("/")
+def root():
+    """Friendly landing payload so the bare API URL isn't a bare 404."""
+    return {
+        "name": "PRISM API",
+        "description": "Multimodal disinformation detection — text, image, video",
+        "docs": "/docs",
+        "health": "/health",
+        "endpoints": ["/scan", "/scan/text", "/scan/image", "/scan/video", "/scan/extension"],
+    }
+
+
 @app.get("/health")
 def health():
     return {

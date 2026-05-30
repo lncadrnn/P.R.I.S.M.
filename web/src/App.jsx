@@ -297,6 +297,11 @@ export default function App() {
                 <div className={styles.panelHeader}>
                   <span className={styles.panelTag}>Output</span>
                   <span className={styles.panelTitle}>Verdict</span>
+                  <button
+                    className={styles.clearResult}
+                    onClick={() => setResult(null)}
+                    aria-label="Clear verdict"
+                  >Clear</button>
                 </div>
                 <div className={styles.panelBody}>
                   <VerdictCard result={result} />

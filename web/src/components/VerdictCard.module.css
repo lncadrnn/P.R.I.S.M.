@@ -33,6 +33,14 @@
 .badge.real    { color: var(--real);    background: var(--real-badge-bg); border: 1.5px solid var(--real-badge-bdr); }
 .badge.unknown { color: var(--unknown); background: var(--surface3); border: 1.5px solid var(--border2); }
 
+.unknownNote {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  max-width: 300px;
+  text-align: center;
+}
+
 .confidenceRow { display: flex; align-items: center; gap: 16px; width: 100%; max-width: 260px; }
 .bar { flex: 1; height: 6px; background: var(--border2); border-radius: 3px; overflow: hidden; }
 .fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
