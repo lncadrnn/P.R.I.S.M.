@@ -16,10 +16,12 @@ import torch.nn as nn
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 
-# xlm-roberta-base is multilingual (100 languages including Tagalog + English)
-# and handles Taglish code-switching natively. Swap for a Filipino-specific
-# fine-tuned checkpoint (e.g. jcblaise/roberta-tagalog-base) once benchmarked.
-MODEL_ID = "xlm-roberta-base"
+# jcblaise/roberta-tagalog-large is trained on Filipino Wikipedia, CommonCrawl,
+# and OSCAR corpus by DLSU-NLP — the strongest open Filipino language model.
+# It has a Tagalog-specific SentencePiece vocabulary and handles Taglish
+# code-switching significantly better than xlm-roberta-base.
+# Fine-tune this backbone on FakeNewsNet + Vera Files for best accuracy.
+MODEL_ID = "jcblaise/roberta-tagalog-large"
 MAX_LENGTH = 256
 
 # Binary classification: 0 = real, 1 = fake

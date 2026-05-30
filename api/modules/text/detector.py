@@ -138,10 +138,12 @@ class TextDetector:
 
         label = "fake" if fake_prob >= 0.5 else "real"
 
-        # --- LIME explanation ---
+        # --- Pattern + LIME explanation ---
         explanation = self.explainer.explain(
             text,
             predict_fn=self._predict_proba,
+            label=label,
+            confidence=round(fake_prob, 4),
             num_features=10,
         )
 

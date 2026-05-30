@@ -28,6 +28,8 @@ from typing import Callable
 import numpy as np
 from lime.lime_text import LimeTextExplainer as _LimeCore
 
+from .patterns import analyze as pattern_analyze
+
 # Label constants (must match model training convention)
 LABEL_REAL = 0
 LABEL_FAKE = 1
@@ -65,34 +67,33 @@ class LIMETextExplainer:
         self,
         text: str,
         predict_fn: Callable[[list[str]], np.ndarray],
+        label: str,
+        confidence: float,
         num_features: int = 10,
     ) -> dict:
         """
-        Compute word-level importance for a single text.
+        Compute a full explanation: Filipino pattern signals + LIME word weights.
 
         Parameters
         ----------
         text : str
-            The raw input string (Filipino, English, or Taglish).
-        predict_fn : callable
-            Accepts a list[str], returns np.ndarray of shape (N, 2) with
-            class probabilities [P(real), P(fake)] summing to 1.0 per row.
-            Must be the same function used for inference.
-        num_features : int
-            Maximum number of words to highlight in the explanation.
+        predict_fn : callable — (list[str]) -> np.ndarray shape (N, 2)
+        label : str — "fake" | "real" from the primary inference pass
+        confidence : float — P(fake) from the primary inference pass
+        num_features : int — max LIME words to highlight
 
         Returns
         -------
-        dict with keys:
-            method      : "LIME"
-            top_words   : list of {"word": str, "weight": float, "direction": str}
-                          sorted by |weight| descending.
-                          Positive weight → word pushes toward the top label.
-                          Negative weight → word pushes against the top label.
-            predicted_label : "real" | "fake"
-            num_samples : int (how many perturbations were used)
-            note        : brief methodology note
+        dict with:
+            method      : "pattern+LIME"
+            summary     : str — human-readable paragraph explaining the verdict
+            reasons     : list — categorized Filipino pattern signals with severity
+            top_words   : list — LIME word weights for highlight rendering
         """
+        # --- Filipino pattern analysis (rule-based, language-aware) ---
+        pattern_result = pattern_analyze(text, label, confidence)
+
+        # --- LIME word-level importance ---
         exp = self._lime.explain_instance(
             text,
             predict_fn,
@@ -100,12 +101,7 @@ class LIMETextExplainer:
             num_samples=self.num_samples,
             top_labels=1,
         )
-
-        # available_labels() returns labels in descending score order; index 0
-        # is the top predicted label.
         top_label_idx = exp.available_labels()[0]
-        predicted_label = CLASS_NAMES[top_label_idx]
-
         word_weights = exp.as_list(label=top_label_idx)
         top_words = [
             {
@@ -117,12 +113,8 @@ class LIMETextExplainer:
         ]
 
         return {
-            "method": "LIME",
+            "method": "pattern+LIME",
+            "summary": pattern_result["summary"],
+            "reasons": pattern_result["reasons"],
             "top_words": top_words,
-            "predicted_label": predicted_label,
-            "num_samples": self.num_samples,
-            "note": (
-                "Word-level importance scores. Positive weight = word supports "
-                f"the '{predicted_label}' classification; negative = opposes it."
-            ),
         }

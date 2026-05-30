@@ -48,6 +48,10 @@ export default function VerdictCard({ result }) {
         </div>
       )}
 
+      {modules?.text?.explanation?.summary && (
+        <WhySection explanation={modules.text.explanation} />
+      )}
+
       {modules?.text?.explanation?.top_words && (
         <LimeHighlights words={modules.text.explanation.top_words} label={modules.text.label} />
       )}
@@ -71,6 +75,38 @@ function ModuleRow({ name, data, stub }) {
         </>
       ) : (
         <span className={styles.moduleStub}>{stub}</span>
+      )}
+    </div>
+  )
+}
+
+const SEVERITY_CLASS = { high: 'sevHigh', medium: 'sevMed', low: 'sevLow' }
+
+function WhySection({ explanation }) {
+  const { summary, reasons } = explanation
+  return (
+    <div className={styles.why}>
+      <p className={styles.sectionLabel}>Why this verdict?</p>
+      {summary && <p className={styles.whySummary}>{summary}</p>}
+      {reasons?.length > 0 && (
+        <div className={styles.reasons}>
+          {reasons.map((r, i) => (
+            <div key={i} className={`${styles.reason} ${styles[SEVERITY_CLASS[r.severity] ?? 'sevLow']}`}>
+              <div className={styles.reasonHeader}>
+                <span className={styles.reasonCat}>{r.category}</span>
+                <span className={styles.reasonSev}>{r.severity}</span>
+              </div>
+              <p className={styles.reasonDetail}>{r.detail}</p>
+              {r.matched?.length > 0 && (
+                <div className={styles.reasonMatched}>
+                  {r.matched.map((m, j) => (
+                    <code key={j} className={styles.matchedWord}>{m}</code>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )
