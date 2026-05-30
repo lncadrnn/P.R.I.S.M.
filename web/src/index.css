@@ -1,27 +1,46 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:          #08080f;
-  --surface:     #10101a;
-  --surface2:    #18182a;
-  --border:      #1e1e35;
-  --border2:     #2a2a45;
-  --text:        #d8d8f0;
-  --text-muted:  #6868a0;
-  --accent:      #6366f1;
-  --accent-dim:  #3b3d8a;
-  --fake:        #ef4444;
-  --fake-dim:    #7f1d1d;
-  --real:        #22c55e;
-  --real-dim:    #14532d;
-  --radius:      10px;
+  --bg:          #070710;
+  --surface:     #0e0e1c;
+  --surface2:    #141428;
+  --surface3:    #1a1a35;
+  --border:      #1f1f3a;
+  --border2:     #2b2b50;
+  --text:        #e2e2f4;
+  --text-muted:  #5a5a8a;
+  --text-dim:    #8888b8;
+  --accent:      #7c7ff5;
+  --accent2:     #a78bfa;
+  --accent-glow: rgba(124,127,245,0.15);
+  --fake:        #f87171;
+  --fake-dim:    #450a0a;
+  --fake-glow:   rgba(248,113,113,0.2);
+  --real:        #34d399;
+  --real-dim:    #022c22;
+  --real-glow:   rgba(52,211,153,0.2);
+  --unknown:     #94a3b8;
+  --radius:      12px;
+  --radius-lg:   18px;
   --font:        'Inter', system-ui, sans-serif;
   --mono:        'JetBrains Mono', monospace;
+  --shadow:      0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg:   0 8px 48px rgba(0,0,0,0.6);
 }
 
-html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
 
-::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--surface); } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
 button { cursor: pointer; font-family: var(--font); }
 input, textarea { font-family: var(--font); }

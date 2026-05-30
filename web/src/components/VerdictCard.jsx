@@ -1,79 +1,79 @@
 import styles from './VerdictCard.module.css'
 
-const LABELS = { fake: 'FAKE', real: 'REAL', unknown: 'UNKNOWN' }
+const LABELS   = { fake: 'FAKE',  real: 'REAL',  unknown: '?' }
+const ICONS    = { text: '📝',    image: '🖼️',   video: '🎥' }
+const STUBS    = { text: 'No caption submitted', image: 'No image submitted', video: 'No video submitted' }
 
 export default function VerdictCard({ result }) {
   const { label, confidence, modules, explanation } = result
   const pct = Math.round(confidence * 100)
-  const imageModule = modules?.image
-  const textModule  = modules?.text
+  const cls = ['fake','real','unknown'].includes(label) ? label : 'unknown'
 
   return (
     <div className={styles.card}>
-      {/* Overall verdict */}
-      <div className={styles.top}>
-        <div className={`${styles.badge} ${styles[label]}`}>
-          {LABELS[label] ?? label.toUpperCase()}
+      {/* Verdict hero */}
+      <div className={`${styles.verdictHero} ${styles[cls]}`}>
+        <div className={`${styles.badge} ${styles[cls]}`}>
+          {LABELS[cls] ?? cls.toUpperCase()}
         </div>
-        <div className={styles.confidenceWrap}>
-          <span className={styles.confidenceLabel}>Confidence</span>
+        <div className={styles.confidenceRow}>
           <div className={styles.bar}>
-            <div
-              className={`${styles.fill} ${styles[label]}`}
-              style={{ width: `${pct}%` }}
-            />
+            <div className={`${styles.fill} ${styles[cls]}`} style={{ width: `${pct}%` }} />
           </div>
           <span className={styles.confidencePct}>{pct}%</span>
         </div>
+        {explanation?.modules_used?.length > 0 && (
+          <div className={styles.meta}>
+            <span>Based on:</span>
+            {explanation.modules_used.map(m => (
+              <span key={m} className={styles.chip}>{m}</span>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Fusion explanation */}
-      {explanation?.modules_used?.length > 0 && (
-        <p className={styles.meta}>
-          Verdict based on:{' '}
-          {explanation.modules_used.map(m => (
-            <span key={m} className={styles.chip}>{m}</span>
-          ))}
-        </p>
-      )}
-
       {/* Module breakdown */}
+      <p className={styles.modulesLabel}>Module Breakdown</p>
       <div className={styles.modules}>
-        <ModuleRow name="Text"  data={textModule}  stub="Text module not yet implemented" />
-        <ModuleRow name="Image" data={imageModule} stub="No image submitted" />
-        <ModuleRow name="Video" data={modules?.video} stub="Video module not yet implemented" />
+        {['text','image','video'].map(key => (
+          <ModuleRow key={key} name={key} icon={ICONS[key]} data={modules?.[key]} stub={STUBS[key]} />
+        ))}
       </div>
 
       {/* GradCAM heatmap */}
-      {imageModule?.explanation?.heatmap_b64 && (
+      {modules?.image?.explanation?.heatmap_b64 && (
         <div className={styles.heatmap}>
-          <p className={styles.heatmapLabel}>GradCAM — regions that triggered the image verdict</p>
+          <p className={styles.sectionLabel}>GradCAM — image regions that influenced the verdict</p>
           <img
-            src={`data:image/png;base64,${imageModule.explanation.heatmap_b64}`}
+            src={`data:image/png;base64,${modules.image.explanation.heatmap_b64}`}
             alt="GradCAM heatmap"
             className={styles.heatmapImg}
           />
         </div>
       )}
 
-      {/* LIME text highlights (ready for when text module ships) */}
-      {textModule?.explanation?.highlights && (
-        <LimeHighlights highlights={textModule.explanation.highlights} />
+      {/* LIME word highlights */}
+      {modules?.text?.explanation?.top_words && (
+        <LimeHighlights words={modules.text.explanation.top_words} label={modules.text.label} />
       )}
     </div>
   )
 }
 
-function ModuleRow({ name, data, stub }) {
+function ModuleRow({ name, icon, data, stub }) {
+  const pct = data ? Math.round(data.confidence * 100) : 0
+  const cls = data ? (['fake','real','unknown'].includes(data.label) ? data.label : 'unknown') : null
   return (
     <div className={styles.moduleRow}>
+      <span className={styles.moduleIcon}>{icon}</span>
       <span className={styles.moduleName}>{name}</span>
       {data ? (
         <>
-          <span className={`${styles.moduleLabel} ${styles[data.label]}`}>
-            {data.label.toUpperCase()}
-          </span>
-          <span className={styles.moduleConf}>{Math.round(data.confidence * 100)}%</span>
+          <span className={`${styles.moduleLabel} ${styles[cls]}`}>{data.label.toUpperCase()}</span>
+          <div className={styles.moduleBar}>
+            <div className={`${styles.moduleBarFill} ${styles[cls]}`} style={{ width: `${pct}%` }} />
+          </div>
+          <span className={styles.moduleConf}>{pct}%</span>
         </>
       ) : (
         <span className={styles.moduleStub}>{stub}</span>
@@ -82,24 +82,24 @@ function ModuleRow({ name, data, stub }) {
   )
 }
 
-function LimeHighlights({ highlights }) {
+function LimeHighlights({ words, label }) {
+  const isFake = label === 'fake'
   return (
     <div className={styles.lime}>
-      <p className={styles.heatmapLabel}>LIME — word-level explanation</p>
+      <p className={styles.sectionLabel}>LIME — word-level explanation</p>
       <p className={styles.limeText}>
-        {highlights.map((w, i) => (
-          <span
-            key={i}
-            className={styles.limeWord}
-            style={{
-              background: w.score > 0
-                ? `rgba(239,68,68,${Math.min(w.score, 1) * 0.6})`
-                : `rgba(34,197,94,${Math.min(Math.abs(w.score), 1) * 0.6})`,
-            }}
-          >
-            {w.word}{' '}
-          </span>
-        ))}
+        {words.map((w, i) => {
+          const pushesTowardFake = isFake ? w.weight > 0 : w.weight < 0
+          const alpha = Math.min(Math.abs(w.weight) * 4, 0.65)
+          const bg = pushesTowardFake
+            ? `rgba(248,113,113,${alpha})`
+            : `rgba(52,211,153,${alpha})`
+          return (
+            <span key={i} className={styles.limeWord} style={{ background: bg }}>
+              {w.word}{' '}
+            </span>
+          )
+        })}
       </p>
     </div>
   )
