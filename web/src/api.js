@@ -6,15 +6,6 @@ export async function checkHealth() {
   return res.json()
 }
 
-export async function fetchFromUrl(url) {
-  const res = await fetch(`${BASE}/fetch-url?url=${encodeURIComponent(url)}`)
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || `Could not fetch URL (${res.status})`)
-  }
-  return res.json()
-}
-
 export async function scan({ text, imageFile }) {
   const form = new FormData()
   if (imageFile) form.append('image', imageFile)

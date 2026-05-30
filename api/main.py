@@ -6,7 +6,6 @@ Run from the api/ directory:
 
 Routes:
     GET  /health          -- liveness check
-    GET  /fetch-url       -- scrape text + image from a URL
     POST /scan/text       -- text-only verdict (VerdictResponse)
     POST /scan/image      -- image-only verdict (VerdictResponse)
     POST /scan/video      -- video-only verdict (VerdictResponse)
@@ -19,9 +18,7 @@ import tempfile
 from contextlib import asynccontextmanager
 from typing import Optional
 
-import httpx
-from bs4 import BeautifulSoup
-from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from PIL import Image
@@ -88,54 +85,6 @@ def health():
         "modules": {"image": "active", "text": "active", "video": "active"},
     }
 
-
-_SCRAPE_HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    )
-}
-
-_OG = lambda soup, prop: (  # noqa: E731
-    (soup.find("meta", property=prop) or {}).get("content", "").strip()
-)
-
-
-@app.get("/fetch-url")
-async def fetch_url(url: str = Query(..., description="Public URL to scrape")):
-    """
-    Scrape Open Graph text and image from any public URL.
-    Works best with news articles and public social media posts.
-    Returns {text, image_url} — both may be empty strings if the page blocks bots.
-    """
-    try:
-        async with httpx.AsyncClient(
-            headers=_SCRAPE_HEADERS, follow_redirects=True, timeout=12
-        ) as client:
-            resp = await client.get(url)
-    except httpx.RequestError as exc:
-        raise HTTPException(status_code=502, detail=f"Could not reach URL: {exc}")
-
-    if resp.status_code >= 400:
-        raise HTTPException(
-            status_code=502,
-            detail=f"URL returned HTTP {resp.status_code}",
-        )
-
-    soup = BeautifulSoup(resp.content, "html.parser")
-
-    # --- Text: prefer og:description, fall back to og:title, then <title>
-    text = (
-        _OG(soup, "og:description")
-        or _OG(soup, "og:title")
-        or (soup.find("title") or {}).get_text("", strip=True)
-    )
-
-    # --- Image: og:image
-    image_url = _OG(soup, "og:image")
-
-    return {"text": text, "image_url": image_url}
 
 
 @app.post("/scan/text", response_model=VerdictResponse)

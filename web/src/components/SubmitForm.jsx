@@ -1,11 +1,8 @@
 import { useState, useRef } from 'react'
-import { scan, fetchFromUrl } from '../api'
+import { scan } from '../api'
 import styles from './SubmitForm.module.css'
 
 export default function SubmitForm({ onResult, disabled }) {
-  const [url, setUrl] = useState('')
-  const [fetching, setFetching] = useState(false)
-  const [fetchError, setFetchError] = useState(null)
   const [text, setText] = useState('')
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
@@ -32,32 +29,6 @@ export default function SubmitForm({ onResult, disabled }) {
     if (fileRef.current) fileRef.current.value = ''
   }
 
-  async function handleFetchUrl(e) {
-    e.preventDefault()
-    const trimmed = url.trim()
-    if (!trimmed) return
-    setFetchError(null)
-    setFetching(true)
-    try {
-      const data = await fetchFromUrl(trimmed)
-      if (data.text) setText(data.text)
-      if (data.image_url) {
-        // Download image_url as a blob so it goes through the normal image flow
-        const imgRes = await fetch(data.image_url)
-        const blob = await imgRes.blob()
-        const file = new File([blob], 'fetched-image.jpg', { type: blob.type || 'image/jpeg' })
-        handleImage(file)
-      }
-      if (!data.text && !data.image_url) {
-        setFetchError('No text or image found at that URL. Try a news article or public post.')
-      }
-    } catch (err) {
-      setFetchError(err.message)
-    } finally {
-      setFetching(false)
-    }
-  }
-
   async function handleSubmit(e) {
     e.preventDefault()
     if (!text.trim() && !imageFile) {
@@ -80,29 +51,6 @@ export default function SubmitForm({ onResult, disabled }) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
-      <div className={styles.urlRow}>
-        <input
-          className={styles.urlInput}
-          type="url"
-          placeholder="Paste a URL to auto-fill text and image"
-          value={url}
-          onChange={e => setUrl(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleFetchUrl(e)}
-          disabled={fetching || disabled}
-        />
-        <button
-          type="button"
-          className={styles.urlBtn}
-          onClick={handleFetchUrl}
-          disabled={fetching || !url.trim() || disabled}
-        >
-          {fetching ? <span className={styles.spinnerSm} /> : 'Fetch'}
-        </button>
-      </div>
-      {fetchError && <p className={styles.error}>{fetchError}</p>}
-
-      <div className={styles.divider}><span>or fill in manually</span></div>
-
       <div className={styles.field}>
         <label className={styles.label}>Caption / Text</label>
         <textarea
