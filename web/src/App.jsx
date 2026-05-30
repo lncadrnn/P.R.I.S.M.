@@ -4,6 +4,84 @@ import VerdictCard from './components/VerdictCard'
 import { checkHealth } from './api'
 import styles from './App.module.css'
 
+function SunIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5"/>
+      <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+    </svg>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  )
+}
+
+function MockVerdictCard() {
+  return (
+    <div className={styles.mockCard}>
+      <div className={styles.mockHeader}>
+        <span className={styles.mockTag}>Output</span>
+        <span className={styles.mockTitle}>Verdict</span>
+      </div>
+      <div className={styles.mockBody}>
+        <div className={styles.mockVerdict}>
+          <div className={styles.mockBadgeFake}>FAKE</div>
+          <div className={styles.mockConfRow}>
+            <div className={styles.mockBar}>
+              <div className={styles.mockBarFill} style={{ width: '87%' }} />
+            </div>
+            <span className={styles.mockPct}>87%</span>
+          </div>
+          <div className={styles.mockMeta}>
+            <span>Based on:</span>
+            <span className={styles.mockChip}>text</span>
+            <span className={styles.mockChip}>image</span>
+          </div>
+        </div>
+        <p className={styles.mockLabel}>Module Breakdown</p>
+        <div className={styles.mockModules}>
+          <div className={styles.mockRow}>
+            <span className={styles.mockKey}>text</span>
+            <span className={`${styles.mockRowVerdict} ${styles.mockFake}`}>FAKE</span>
+            <div className={styles.mockModBar}>
+              <div className={`${styles.mockModFill} ${styles.mockFakeFill}`} style={{ width: '91%' }} />
+            </div>
+            <span className={styles.mockConf}>91%</span>
+          </div>
+          <div className={styles.mockRow}>
+            <span className={styles.mockKey}>image</span>
+            <span className={`${styles.mockRowVerdict} ${styles.mockReal}`}>REAL</span>
+            <div className={styles.mockModBar}>
+              <div className={`${styles.mockModFill} ${styles.mockRealFill}`} style={{ width: '24%' }} />
+            </div>
+            <span className={styles.mockConf}>24%</span>
+          </div>
+          <div className={styles.mockRow}>
+            <span className={styles.mockKey}>video</span>
+            <span className={styles.mockStubTxt}>No video submitted</span>
+          </div>
+        </div>
+        <p className={styles.mockLabel}>LIME: word-level explanation</p>
+        <p className={styles.mockLime}>
+          <span className={styles.mockWFakeH}>BREAKING</span>{' '}
+          <span>ang </span>
+          <span className={styles.mockWFakeM}>viral</span>{' '}
+          <span>na </span>
+          <span className={styles.mockWReal}>litrato</span>{' '}
+          <span>ay </span>
+          <span className={styles.mockWFakeL}>peke</span>{' '}
+          <span>raw</span>
+        </p>
+      </div>
+    </div>
+  )
+}
+
 const MODULES = [
   {
     key: 'text',
@@ -31,7 +109,17 @@ const MODULES = [
 export default function App() {
   const [result, setResult] = useState(null)
   const [apiOnline, setApiOnline] = useState(null)
+  const [theme, setTheme] = useState(() => {
+    const stored = localStorage.getItem('prism-theme')
+    if (stored) return stored
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  })
   const scanRef = useRef(null)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('prism-theme', theme)
+  }, [theme])
 
   useEffect(() => {
     checkHealth()
@@ -68,29 +156,43 @@ export default function App() {
           <a href="#modules" className={styles.navLink}>Modules</a>
           <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer" className={styles.navLink}>API docs</a>
         </nav>
-        <div className={`${styles.statusPill} ${statusClass}`}>
-          <span className={styles.statusDot} />
-          {statusText}
+        <div className={styles.headerRight}>
+          <div className={`${styles.statusPill} ${statusClass}`}>
+            <span className={styles.statusDot} />
+            {statusText}
+          </div>
+          <button
+            className={styles.themeToggle}
+            onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </button>
         </div>
       </header>
 
       <section className={styles.hero}>
-        <p className={styles.heroEyebrow}>Multimodal disinformation detection for Filipino social media</p>
-        <h1 className={styles.heroTitle}>Spot fake content before it spreads</h1>
-        <p className={styles.heroDesc}>
-          Submit a social media post and PRISM routes it through independent text, image, and video
-          forensic modules. Their confidence scores are fused into a single credibility verdict with
-          word-level and pixel-level explanations.
-        </p>
-        <div className={styles.heroActions}>
-          <button className={styles.heroCta} onClick={scrollToScan}>Scan a post</button>
-          <a href="/docs/PRISM.pdf" className={styles.heroSecondary} target="_blank" rel="noreferrer">Read the paper</a>
+        <div className={styles.heroLeft}>
+          <p className={styles.heroEyebrow}>Multimodal disinformation detection for Filipino social media</p>
+          <h1 className={styles.heroTitle}>Spot fake content before it spreads</h1>
+          <p className={styles.heroDesc}>
+            Submit a social media post and PRISM routes it through independent text, image, and video
+            forensic modules. Confidence scores are fused into a single credibility verdict with
+            word-level and pixel-level explanations.
+          </p>
+          <div className={styles.heroActions}>
+            <button className={styles.heroCta} onClick={scrollToScan}>Scan a post</button>
+            <a href="/docs/PRISM.pdf" className={styles.heroSecondary} target="_blank" rel="noreferrer">Read the paper</a>
+          </div>
+          <div className={styles.heroBadges}>
+            <span className={styles.heroBadge}>Filipino / Taglish</span>
+            <span className={styles.heroBadge}>Facebook, TikTok, X</span>
+            <span className={styles.heroBadge}>Explainable AI</span>
+            <span className={styles.heroBadge}>Late fusion</span>
+          </div>
         </div>
-        <div className={styles.heroBadges}>
-          <span className={styles.heroBadge}>Filipino / Taglish</span>
-          <span className={styles.heroBadge}>Facebook, TikTok, X</span>
-          <span className={styles.heroBadge}>Explainable AI</span>
-          <span className={styles.heroBadge}>Late fusion</span>
+        <div className={styles.heroRight}>
+          <MockVerdictCard />
         </div>
       </section>
 

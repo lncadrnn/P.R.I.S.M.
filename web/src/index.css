@@ -1,31 +1,79 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Light mode */
 :root {
-  --bg:          #070710;
-  --surface:     #0e0e1c;
-  --surface2:    #141428;
-  --surface3:    #1a1a35;
-  --border:      #1f1f3a;
-  --border2:     #2b2b50;
-  --text:        #e2e2f4;
-  --text-muted:  #5a5a8a;
-  --text-dim:    #8888b8;
-  --accent:      #7c7ff5;
-  --accent2:     #a78bfa;
-  --accent-glow: rgba(124,127,245,0.15);
-  --fake:        #f87171;
-  --fake-dim:    #450a0a;
-  --fake-glow:   rgba(248,113,113,0.2);
-  --real:        #34d399;
-  --real-dim:    #022c22;
-  --real-glow:   rgba(52,211,153,0.2);
-  --unknown:     #94a3b8;
-  --radius:      12px;
-  --radius-lg:   18px;
-  --font:        'Inter', system-ui, sans-serif;
-  --mono:        'JetBrains Mono', monospace;
-  --shadow:      0 4px 24px rgba(0,0,0,0.4);
-  --shadow-lg:   0 8px 48px rgba(0,0,0,0.6);
+  --bg:               #ffffff;
+  --surface:          #f8fafc;
+  --surface2:         #f1f5f9;
+  --surface3:         #e2e8f0;
+  --border:           #e2e8f0;
+  --border2:          #cbd5e1;
+  --text:             #0f172a;
+  --text-muted:       #94a3b8;
+  --text-dim:         #475569;
+  --accent:           #2563eb;
+  --accent2:          #1d4ed8;
+  --accent-glow:      rgba(37,99,235,0.1);
+  --accent-border:    rgba(37,99,235,0.2);
+  --accent-shadow:    rgba(37,99,235,0.22);
+  --accent-shadow-lg: rgba(37,99,235,0.38);
+  --fake:             #dc2626;
+  --fake-dim:         #fef2f2;
+  --fake-glow:        rgba(220,38,38,0.1);
+  --fake-badge-bg:    rgba(220,38,38,0.08);
+  --fake-badge-bdr:   rgba(220,38,38,0.25);
+  --real:             #16a34a;
+  --real-dim:         #f0fdf4;
+  --real-glow:        rgba(22,163,74,0.1);
+  --real-badge-bg:    rgba(22,163,74,0.08);
+  --real-badge-bdr:   rgba(22,163,74,0.25);
+  --unknown:          #64748b;
+  --radius:           12px;
+  --radius-lg:        18px;
+  --font:             'Inter', system-ui, sans-serif;
+  --mono:             'JetBrains Mono', monospace;
+  --shadow:           0 4px 24px rgba(0,0,0,0.07);
+  --shadow-lg:        0 8px 48px rgba(0,0,0,0.12);
+  --header-bg:        rgba(255,255,255,0.92);
+  --hero-blob-1:      rgba(37,99,235,0.07);
+  --hero-blob-2:      rgba(99,102,241,0.04);
+  --logo-glow:        rgba(37,99,235,0.22);
+}
+
+/* Dark mode */
+[data-theme="dark"] {
+  --bg:               #030712;
+  --surface:          #0d1117;
+  --surface2:         #111827;
+  --surface3:         #1f2937;
+  --border:           #1f2937;
+  --border2:          #374151;
+  --text:             #f1f5f9;
+  --text-muted:       #64748b;
+  --text-dim:         #94a3b8;
+  --accent:           #3b82f6;
+  --accent2:          #60a5fa;
+  --accent-glow:      rgba(59,130,246,0.15);
+  --accent-border:    rgba(59,130,246,0.25);
+  --accent-shadow:    rgba(59,130,246,0.25);
+  --accent-shadow-lg: rgba(59,130,246,0.4);
+  --fake:             #f87171;
+  --fake-dim:         #1f0a0a;
+  --fake-glow:        rgba(248,113,113,0.15);
+  --fake-badge-bg:    rgba(248,113,113,0.12);
+  --fake-badge-bdr:   rgba(248,113,113,0.35);
+  --real:             #34d399;
+  --real-dim:         #052e16;
+  --real-glow:        rgba(52,211,153,0.15);
+  --real-badge-bg:    rgba(52,211,153,0.12);
+  --real-badge-bdr:   rgba(52,211,153,0.35);
+  --unknown:          #94a3b8;
+  --shadow:           0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg:        0 8px 48px rgba(0,0,0,0.6);
+  --header-bg:        rgba(3,7,18,0.85);
+  --hero-blob-1:      rgba(59,130,246,0.08);
+  --hero-blob-2:      rgba(99,102,241,0.05);
+  --logo-glow:        rgba(59,130,246,0.3);
 }
 
 html, body {
@@ -36,6 +84,7 @@ html, body {
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.2s, color 0.2s;
 }
 
 ::-webkit-scrollbar { width: 5px; }

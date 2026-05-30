@@ -60,7 +60,7 @@
   text-transform: uppercase;
   color: var(--accent);
   background: var(--accent-glow);
-  border: 1px solid rgba(124,127,245,0.2);
+  border: 1px solid var(--accent-border);
   border-radius: 6px;
   padding: 3px 10px;
 }
@@ -82,8 +82,8 @@
 
 .error {
   font-size: 12.5px; color: var(--fake);
-  background: rgba(248,113,113,0.08);
-  border: 1px solid rgba(248,113,113,0.2);
+  background: var(--fake-badge-bg);
+  border: 1px solid var(--fake-badge-bdr);
   border-radius: 8px; padding: 9px 13px;
 }
 .warning {
@@ -98,7 +98,7 @@
 }
 
 .submit {
-  background: linear-gradient(135deg, #7c7ff5, #a78bfa);
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: #fff;
   border: none;
   border-radius: var(--radius);
@@ -111,11 +111,11 @@
   justify-content: center;
   gap: 10px;
   transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 4px 16px rgba(124,127,245,0.25);
+  box-shadow: 0 4px 16px var(--accent-shadow);
 }
 .submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(124,127,245,0.4);
+  box-shadow: 0 6px 24px var(--accent-shadow-lg);
 }
 .submit:active:not(:disabled) { transform: translateY(0); }
 .submit:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
