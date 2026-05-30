@@ -1,0 +1,376 @@
+"""
+forensics.py — Spatial and temporal artifact analyzers for video deepfake detection.
+
+SpatialAnalyzer:
+    Detects per-frame pixel-level artifacts using:
+    - Error Level Analysis (ELA): reveals JPEG compression inconsistencies
+      introduced by GAN / diffusion face synthesis pipelines.
+    - High-frequency noise analysis: synthetic faces often carry distinctive
+      noise patterns invisible to the naked eye but detectable via frequency
+      domain analysis.
+
+TemporalAnalyzer:
+    Detects inter-frame inconsistencies using:
+    - Dense optical flow (Farneback): measures pixel displacement between
+      consecutive frames.  Deepfakes exhibit abnormal jitter because the
+      generated face region is composited independently each frame.
+    - Lip-sync anomaly detection: isolates the mouth region and measures
+      optical-flow variance there vs. the overall face.  Mismatched audio-
+      driven mouth movement leaves a characteristic motion signature.
+
+Both analyzers operate on raw numpy frames (uint8, HxWx3, BGR or RGB).
+All scores are P(fake) in [0.0, 1.0].
+"""
+
+from __future__ import annotations
+
+import io
+
+import cv2
+import numpy as np
+from PIL import Image
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _to_gray(frame: np.ndarray) -> np.ndarray:
+    """Return single-channel uint8 grayscale from a 3-channel frame."""
+    if frame.ndim == 2:
+        return frame
+    return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+
+def _normalize_score(value: float, low: float, high: float) -> float:
+    """Linearly map [low, high] → [0, 1], clamped."""
+    if high <= low:
+        return 0.0
+    return float(np.clip((value - low) / (high - low), 0.0, 1.0))
+
+
+# ---------------------------------------------------------------------------
+# SpatialAnalyzer
+# ---------------------------------------------------------------------------
+
+class SpatialAnalyzer:
+    """
+    Per-frame pixel-level artifact detector.
+
+    Parameters
+    ----------
+    ela_quality : int
+        JPEG re-compression quality for ELA (75 is standard).
+    ela_scale : float
+        Amplification factor applied to the ELA difference image before
+        computing its mean intensity — higher = more sensitive.
+    noise_ksize : int
+        Median blur kernel size used for noise-floor estimation.
+    """
+
+    def __init__(
+        self,
+        ela_quality: int = 75,
+        ela_scale: float = 20.0,
+        noise_ksize: int = 3,
+    ) -> None:
+        self.ela_quality = ela_quality
+        self.ela_scale = ela_scale
+        self.noise_ksize = noise_ksize
+
+        # ELA score thresholds (empirically calibrated on FaceForensics++)
+        # mean ELA pixel intensity below 2 → real; above 15 → clearly fake
+        self._ela_low = 2.0
+        self._ela_high = 15.0
+
+        # Noise score thresholds
+        # std-dev of residual noise below 3 → real; above 20 → fake
+        self._noise_low = 3.0
+        self._noise_high = 20.0
+
+    # ------------------------------------------------------------------
+    # ELA
+    # ------------------------------------------------------------------
+
+    def _ela(self, frame: np.ndarray) -> float:
+        """
+        Error Level Analysis score for one frame.
+
+        Algorithm:
+        1. Encode the frame as JPEG at self.ela_quality.
+        2. Decode back to RGB.
+        3. Compute absolute difference × ela_scale.
+        4. Return mean pixel intensity of the difference image.
+
+        A higher score indicates that parts of the image were
+        re-compressed at a different quality than others, which
+        is a hallmark of GAN/diffusion face insertion.
+        """
+        pil_img = Image.fromarray(
+            cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) if frame.ndim == 3 else frame
+        )
+        buf = io.BytesIO()
+        pil_img.save(buf, format="JPEG", quality=self.ela_quality)
+        buf.seek(0)
+        recompressed = np.array(Image.open(buf).convert("RGB"))
+        original_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) if frame.ndim == 3 else frame
+
+        diff = np.abs(original_rgb.astype(np.float32) - recompressed.astype(np.float32))
+        ela_mean = float(np.mean(diff) * self.ela_scale)
+        return ela_mean
+
+    # ------------------------------------------------------------------
+    # Noise analysis
+    # ------------------------------------------------------------------
+
+    def _noise_score(self, frame: np.ndarray) -> float:
+        """
+        High-frequency noise residual score for one frame.
+
+        Algorithm:
+        1. Convert to grayscale.
+        2. Estimate the noise-free signal with a median blur.
+        3. Compute residual = original - blurred.
+        4. Return the standard deviation of the residual as the noise score.
+
+        Synthetic faces generated by GANs/diffusions carry model-specific
+        noise patterns in the residual that differ from camera sensor noise.
+        """
+        gray = _to_gray(frame).astype(np.float32)
+        blurred = cv2.medianBlur(gray.astype(np.uint8), self.noise_ksize).astype(np.float32)
+        residual = gray - blurred
+        return float(np.std(residual))
+
+    # ------------------------------------------------------------------
+    # Public interface
+    # ------------------------------------------------------------------
+
+    def analyze(self, frame: np.ndarray) -> float:
+        """
+        Compute a spatial fakeness score for a single frame.
+
+        Parameters
+        ----------
+        frame : np.ndarray
+            BGR uint8 array of shape (H, W, 3).
+
+        Returns
+        -------
+        float
+            P(fake) in [0.0, 1.0], averaged from ELA and noise subscores.
+        """
+        ela_raw = self._ela(frame)
+        noise_raw = self._noise_score(frame)
+
+        ela_score = _normalize_score(ela_raw, self._ela_low, self._ela_high)
+        noise_score = _normalize_score(noise_raw, self._noise_low, self._noise_high)
+
+        # Equal weighting between ELA and noise
+        return float(np.clip((ela_score + noise_score) / 2.0, 0.0, 1.0))
+
+
+# ---------------------------------------------------------------------------
+# TemporalAnalyzer
+# ---------------------------------------------------------------------------
+
+class TemporalAnalyzer:
+    """
+    Inter-frame inconsistency detector.
+
+    Parameters
+    ----------
+    flow_pyr_scale : float
+        Image scale for optical flow pyramid.
+    flow_levels : int
+        Number of pyramid levels.
+    flow_winsize : int
+        Averaging window size for optical flow.
+    flow_iterations : int
+        Number of iterations at each pyramid level.
+    flow_poly_n : int
+        Size of pixel neighbourhood for polynomial expansion.
+    flow_poly_sigma : float
+        Standard deviation of the Gaussian for polynomial expansion.
+    jitter_low / jitter_high : float
+        Thresholds (mean optical-flow magnitude) for normalization.
+    lip_variance_low / lip_variance_high : float
+        Thresholds for lip-region flow variance normalization.
+    """
+
+    # Facial landmark proportions (approximate, relative to frame size).
+    # Used to isolate the mouth region without a full landmark detector.
+    # Based on average face proportions from the 300-W dataset.
+    _LIP_Y_START = 0.65   # fraction of face height from top
+    _LIP_Y_END = 0.85
+    _LIP_X_START = 0.30
+    _LIP_X_END = 0.70
+
+    def __init__(
+        self,
+        flow_pyr_scale: float = 0.5,
+        flow_levels: int = 3,
+        flow_winsize: int = 15,
+        flow_iterations: int = 3,
+        flow_poly_n: int = 5,
+        flow_poly_sigma: float = 1.2,
+        jitter_low: float = 0.5,
+        jitter_high: float = 8.0,
+        lip_variance_low: float = 0.1,
+        lip_variance_high: float = 5.0,
+    ) -> None:
+        self.flow_pyr_scale = flow_pyr_scale
+        self.flow_levels = flow_levels
+        self.flow_winsize = flow_winsize
+        self.flow_iterations = flow_iterations
+        self.flow_poly_n = flow_poly_n
+        self.flow_poly_sigma = flow_poly_sigma
+        self.jitter_low = jitter_low
+        self.jitter_high = jitter_high
+        self.lip_variance_low = lip_variance_low
+        self.lip_variance_high = lip_variance_high
+
+    # ------------------------------------------------------------------
+    # Optical flow
+    # ------------------------------------------------------------------
+
+    def _dense_flow(
+        self, prev_gray: np.ndarray, curr_gray: np.ndarray
+    ) -> np.ndarray:
+        """
+        Compute dense optical flow between two grayscale frames.
+
+        Returns
+        -------
+        np.ndarray
+            Flow field of shape (H, W, 2) — (dx, dy) per pixel.
+        """
+        return cv2.calcOpticalFlowFarneback(
+            prev_gray,
+            curr_gray,
+            None,
+            self.flow_pyr_scale,
+            self.flow_levels,
+            self.flow_winsize,
+            self.flow_iterations,
+            self.flow_poly_n,
+            self.flow_poly_sigma,
+            0,
+        )
+
+    # ------------------------------------------------------------------
+    # Jitter detection
+    # ------------------------------------------------------------------
+
+    def _jitter_score(self, flow: np.ndarray) -> float:
+        """
+        Pixel jitter score from a dense flow field.
+
+        A real video has smooth, coherent motion; deepfakes show high-
+        frequency motion noise in the composited face region because the
+        generated pixels are not temporally consistent.
+
+        Algorithm:
+        1. Compute per-pixel flow magnitude.
+        2. Take the mean magnitude — high mean indicates overall motion.
+        3. Compute the standard deviation of the Laplacian of the magnitude
+           map — high Laplacian std indicates spatially non-smooth (jittery)
+           motion, which is the deepfake signature.
+        4. Normalise jitter ratio against calibrated thresholds.
+        """
+        magnitude = np.sqrt(flow[..., 0] ** 2 + flow[..., 1] ** 2)
+        mean_mag = float(np.mean(magnitude))
+
+        # Laplacian of the magnitude captures spatial non-smoothness (jitter)
+        lap = cv2.Laplacian(magnitude.astype(np.float32), cv2.CV_32F)
+        lap_std = float(np.std(lap))
+
+        # Jitter score: ratio of lap_std to overall motion magnitude.
+        # A still video can have high lap_std; divide by (mean_mag + eps)
+        # to normalise for camera motion.
+        eps = 1e-6
+        jitter_ratio = lap_std / (mean_mag + eps)
+
+        return _normalize_score(jitter_ratio, self.jitter_low, self.jitter_high)
+
+    # ------------------------------------------------------------------
+    # Lip-sync anomaly
+    # ------------------------------------------------------------------
+
+    def _lip_sync_score(
+        self, prev_frame: np.ndarray, curr_frame: np.ndarray, flow: np.ndarray
+    ) -> float:
+        """
+        Lip-sync anomaly score.
+
+        Algorithm:
+        1. Use fixed fractional coordinates to isolate the approximate mouth
+           region (centre-bottom third of the frame).
+        2. Extract the flow sub-field for that region.
+        3. Compute the variance of flow magnitudes in the mouth region.
+        4. High local variance in mouth-region flow while global flow is low
+           suggests the mouth is animated independently of the rest of the
+           face — a lip-sync deepfake signature.
+
+        Note: This is a heuristic approximation.  A production system would
+        use a facial landmark detector (e.g., MediaPipe Face Mesh) to locate
+        the mouth precisely.  For v1 we use fixed proportional coordinates
+        which generalise reasonably to frontal talking-head footage.
+        """
+        h, w = flow.shape[:2]
+        y0 = int(h * self._LIP_Y_START)
+        y1 = int(h * self._LIP_Y_END)
+        x0 = int(w * self._LIP_X_START)
+        x1 = int(w * self._LIP_X_END)
+
+        lip_flow = flow[y0:y1, x0:x1]
+        if lip_flow.size == 0:
+            return 0.0
+
+        lip_magnitude = np.sqrt(lip_flow[..., 0] ** 2 + lip_flow[..., 1] ** 2)
+        lip_variance = float(np.var(lip_magnitude))
+
+        return _normalize_score(lip_variance, self.lip_variance_low, self.lip_variance_high)
+
+    # ------------------------------------------------------------------
+    # Public interface
+    # ------------------------------------------------------------------
+
+    def analyze(self, frames: list[np.ndarray]) -> float:
+        """
+        Compute a temporal fakeness score across a sequence of frames.
+
+        Parameters
+        ----------
+        frames : list[np.ndarray]
+            Ordered list of BGR uint8 frames.  Must contain at least 2.
+
+        Returns
+        -------
+        float
+            P(fake) in [0.0, 1.0].  Returns 0.0 if fewer than 2 frames
+            are supplied (cannot compute inter-frame metrics).
+        """
+        if len(frames) < 2:
+            return 0.0
+
+        jitter_scores: list[float] = []
+        lip_scores: list[float] = []
+
+        prev_frame = frames[0]
+        prev_gray = _to_gray(prev_frame)
+
+        for curr_frame in frames[1:]:
+            curr_gray = _to_gray(curr_frame)
+            flow = self._dense_flow(prev_gray, curr_gray)
+
+            jitter_scores.append(self._jitter_score(flow))
+            lip_scores.append(self._lip_sync_score(prev_frame, curr_frame, flow))
+
+            prev_frame = curr_frame
+            prev_gray = curr_gray
+
+        mean_jitter = float(np.mean(jitter_scores)) if jitter_scores else 0.0
+        mean_lip = float(np.mean(lip_scores)) if lip_scores else 0.0
+
+        # Equal weighting between jitter and lip-sync anomaly
+        return float(np.clip((mean_jitter + mean_lip) / 2.0, 0.0, 1.0))

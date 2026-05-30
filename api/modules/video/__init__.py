@@ -1,2 +1,3 @@
-# Video module — not yet implemented
-# Will house frame-level forensic engine (spatial + temporal artifacts)
+from .detector import VideoDetector
+
+__all__ = ["VideoDetector"]

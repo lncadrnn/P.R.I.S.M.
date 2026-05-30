@@ -1,0 +1,247 @@
+/*
+ * PRISM — Verdict Badge & Tooltip Styles
+ *
+ * The badge is a small pill anchored to the top-right corner of its containing
+ * post element (which scanner.js ensures has position:relative).
+ *
+ * Layout approach:
+ *   - position:absolute on the wrapper so it floats over post content
+ *   - z-index:2147483640 to appear above most site overlays
+ *   - The tooltip is hidden by default; CSS :hover or the .prism-tooltip-visible
+ *     class makes it appear
+ *
+ * Color palette:
+ *   fake    — red (#E53935)
+ *   real    — green (#43A047)
+ *   unknown — dark gray (#546E7A)
+ *   scanning — dim gray (#90A4AE), animated pulse
+ */
+
+/* -------------------------------------------------------------------------
+   Badge wrapper — positioned inside the post element
+   ------------------------------------------------------------------------- */
+
+.prism-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2147483640;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  /* Do not inherit font-size from the host page */
+  font-size: 0;
+  pointer-events: auto;
+}
+
+/* -------------------------------------------------------------------------
+   Badge pill
+   ------------------------------------------------------------------------- */
+
+.prism-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 6px;
+  border-radius: 999px;
+  cursor: default;
+  user-select: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+/* Subtle grow on hover */
+.prism-badge:hover .prism-badge-pill {
+  transform: scale(1.06);
+}
+
+/* Color variants */
+.prism-badge-fake .prism-badge-pill {
+  background-color: #e53935;
+  color: #ffffff;
+}
+
+.prism-badge-real .prism-badge-pill {
+  background-color: #43a047;
+  color: #ffffff;
+}
+
+.prism-badge-unknown .prism-badge-pill {
+  background-color: #546e7a;
+  color: #eceff1;
+}
+
+.prism-badge-scanning .prism-badge-pill {
+  background-color: #90a4ae;
+  color: #ffffff;
+  animation: prism-pulse 1.4s ease-in-out infinite;
+}
+
+/* Small PRISM icon — a simple coloured dot */
+.prism-badge-icon {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.75);
+  flex-shrink: 0;
+}
+
+.prism-badge-text {
+  /* inherits font-size/weight from pill */
+}
+
+/* Scanning pulse animation */
+@keyframes prism-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Tooltip panel — hidden by default, shown on hover
+   ------------------------------------------------------------------------- */
+
+.prism-tooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 240px;
+  background: #1c1c1e;
+  color: #e5e5ea;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+  line-height: 1.5;
+  z-index: 2147483641;
+  pointer-events: none;
+  /* Prevent tooltip from extending beyond viewport left edge */
+  transform-origin: top right;
+  animation: prism-fade-in 0.12s ease;
+}
+
+.prism-badge:hover .prism-tooltip,
+.prism-badge.prism-tooltip-visible .prism-tooltip {
+  display: block;
+}
+
+@keyframes prism-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Tooltip content rows
+   ------------------------------------------------------------------------- */
+
+.prism-tooltip-row {
+  margin-bottom: 4px;
+}
+
+.prism-tooltip-row:last-child {
+  margin-bottom: 0;
+}
+
+.prism-tip-key {
+  color: #8e8e93;
+  font-weight: 600;
+}
+
+.prism-tip-val {
+  color: #e5e5ea;
+  font-weight: 500;
+}
+
+.prism-tooltip-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* Verdict label colors inside tooltip */
+.prism-tip-fake {
+  color: #ff6b6b;
+}
+
+.prism-tip-real {
+  color: #69db7c;
+}
+
+.prism-tip-unknown {
+  color: #adb5bd;
+}
+
+/* Error message */
+.prism-tooltip-error {
+  color: #ff9800;
+  font-style: italic;
+  font-size: 11px;
+}
+
+/* -------------------------------------------------------------------------
+   Word/phrase highlight chips
+   ------------------------------------------------------------------------- */
+
+.prism-tooltip-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.prism-chip {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Words that pushed toward "fake" */
+.prism-chip-fake {
+  background-color: rgba(229, 57, 53, 0.25);
+  color: #ff8a80;
+  border: 1px solid rgba(229, 57, 53, 0.4);
+}
+
+/* Words that pushed toward "real" */
+.prism-chip-real {
+  background-color: rgba(67, 160, 71, 0.2);
+  color: #b9f6ca;
+  border: 1px solid rgba(67, 160, 71, 0.35);
+}
+
+/* -------------------------------------------------------------------------
+   Tooltip footer
+   ------------------------------------------------------------------------- */
+
+.prism-tooltip-footer {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #2c2c2e;
+  color: #636366;
+  font-size: 10px;
+  font-style: italic;
+  text-align: right;
+}

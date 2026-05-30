@@ -1,0 +1,66 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ── Top row ── */
+.top { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+
+.badge {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 10px 28px;
+  border-radius: 10px;
+  min-width: 130px;
+  text-align: center;
+}
+.badge.fake    { background: var(--fake-dim);  color: var(--fake);  border: 1.5px solid var(--fake); }
+.badge.real    { background: var(--real-dim);  color: var(--real);  border: 1.5px solid var(--real); }
+.badge.unknown { background: var(--surface2); color: var(--text-muted); border: 1.5px solid var(--border2); }
+
+.confidenceWrap { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px; }
+.confidenceLabel { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.bar { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.fill.fake    { background: var(--fake); }
+.fill.real    { background: var(--real); }
+.fill.unknown { background: var(--text-muted); }
+.confidencePct { font-size: 22px; font-weight: 700; font-family: var(--mono); }
+
+/* ── Meta ── */
+.meta { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.chip { background: var(--accent-dim); color: var(--accent); font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── Module breakdown ── */
+.modules { display: flex; flex-direction: column; gap: 10px; }
+
+.moduleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.moduleName { font-size: 13px; font-weight: 600; width: 48px; color: var(--text-muted); }
+.moduleLabel { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
+.moduleLabel.fake { color: var(--fake); }
+.moduleLabel.real { color: var(--real); }
+.moduleConf { font-size: 12px; color: var(--text-muted); font-family: var(--mono); margin-left: auto; }
+.moduleStub { font-size: 12px; color: var(--text-muted); font-style: italic; }
+
+/* ── Heatmap ── */
+.heatmap { display: flex; flex-direction: column; gap: 10px; }
+.heatmapLabel { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.heatmapImg { max-width: 100%; border-radius: 8px; border: 1px solid var(--border2); display: block; }
+
+/* ── LIME ── */
+.lime { display: flex; flex-direction: column; gap: 10px; }
+.limeText { font-size: 15px; line-height: 2; }
+.limeWord { border-radius: 3px; padding: 1px 2px; }

@@ -27,7 +27,7 @@ _TRANSFORM = transforms.Compose([
 ])
 
 _MODEL_PATH_DEFAULT = os.path.join(
-    os.path.dirname(__file__), "../../../../models/image_detector.pt"
+    os.path.dirname(__file__), "../../../models/image_detector.pt"
 )
 
 
