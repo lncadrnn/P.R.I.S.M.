@@ -2,10 +2,10 @@
 
 /* Light mode */
 :root {
-  --bg:               #ffffff;
-  --surface:          #f8fafc;
-  --surface2:         #f1f5f9;
-  --surface3:         #e2e8f0;
+  --bg:               #f6f9ff;
+  --surface:          #ffffff;
+  --surface2:         #f0f5ff;
+  --surface3:         #e2eaff;
   --border:           #e2e8f0;
   --border2:          #cbd5e1;
   --text:             #0f172a;
@@ -35,8 +35,8 @@
   --shadow:           0 4px 24px rgba(0,0,0,0.07);
   --shadow-lg:        0 8px 48px rgba(0,0,0,0.12);
   --header-bg:        rgba(255,255,255,0.92);
-  --hero-blob-1:      rgba(37,99,235,0.07);
-  --hero-blob-2:      rgba(99,102,241,0.04);
+  --hero-blob-1:      rgba(37,99,235,0.14);
+  --hero-blob-2:      rgba(99,102,241,0.10);
   --logo-glow:        rgba(37,99,235,0.22);
 }
 

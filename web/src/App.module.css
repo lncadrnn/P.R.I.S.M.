@@ -3,8 +3,9 @@
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(ellipse 60% 40% at 70% -10%, var(--hero-blob-1) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 10% 80%, var(--hero-blob-2) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 80% -5%, var(--hero-blob-1) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 5% 75%, var(--hero-blob-2) 0%, transparent 55%),
+    radial-gradient(ellipse 30% 25% at 50% 100%, var(--hero-blob-2) 0%, transparent 60%),
     var(--bg);
 }
 
@@ -105,12 +106,12 @@
 /* Hero */
 .hero {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.1fr 0.9fr;
   align-items: center;
-  gap: 60px;
-  max-width: 1100px;
+  gap: 64px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 80px 40px 72px;
+  padding: 96px 48px 88px;
   width: 100%;
 }
 @media (max-width: 900px) {
@@ -133,10 +134,10 @@
 }
 
 .heroTitle {
-  font-size: clamp(32px, 4.5vw, 52px);
+  font-size: clamp(36px, 5vw, 60px);
   font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
   color: var(--text);
 }
 
@@ -295,14 +296,20 @@
 .moduleCard {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-top: 2.5px solid var(--accent);
   border-radius: var(--radius-lg);
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
-.moduleCard:hover { border-color: var(--border2); box-shadow: var(--shadow); }
+.moduleCard:hover {
+  border-color: var(--accent);
+  border-top-color: var(--accent);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+}
 
 .moduleCardTop { display: flex; align-items: center; gap: 8px; }
 

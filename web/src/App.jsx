@@ -86,23 +86,23 @@ const MODULES = [
   {
     key: 'text',
     title: 'Text Analysis',
-    model: 'DistilBERT-Tagalog',
+    model: 'XLM-RoBERTa-large',
     xai: 'LIME + Anchors',
-    desc: 'Fine-tuned on Filipino BERT, detects AI-generated captions and fake news in Taglish. Word-level LIME highlights show which phrases drove the verdict.',
+    desc: 'Fine-tuned on a Filipino–English code-switched corpus sourced from Vera Files fact-checks and FakeNewsNet. XLM-RoBERTa-large delivers robust cross-lingual representations for low-resource Tagalog. Word- and phrase-level LIME highlights surface the evidence behind each verdict.',
   },
   {
     key: 'image',
     title: 'Image Forensics',
-    model: 'CNN-ViT hybrid',
-    xai: 'Class Activation Maps',
-    desc: 'Classifies GAN- and diffusion-generated images. Class Activation Maps overlay heatmaps directly on the manipulated image regions.',
+    model: 'EfficientNet-B4 + ViT hybrid',
+    xai: 'GradCAM heatmaps',
+    desc: 'EfficientNet-B4 extracts local texture and frequency artifacts; a Vision Transformer encoder captures global structural inconsistencies. Trained across GAN-generated and diffusion-model outputs. GradCAM overlays class-discriminative heatmaps on suspected manipulation regions.',
   },
   {
     key: 'video',
     title: 'Video Detection',
-    model: 'Frame-level forensic engine',
+    model: 'TimeSformer + optical flow',
     xai: 'Frame artifact overlay',
-    desc: 'Detects spatial pixel artifacts and temporal inconsistencies. Catches lip-sync mismatch, pixel jitter, and inter-frame anomalies across frames.',
+    desc: 'TimeSformer applies divided space-time attention across uniformly sampled frames. Optical flow analysis detects temporal anomalies including lip-sync drift, pixel jitter, and inter-frame discontinuities characteristic of neural deepfakes.',
   },
 ]
 
@@ -173,8 +173,8 @@ export default function App() {
 
       <section className={styles.hero}>
         <div className={styles.heroLeft}>
-          <p className={styles.heroEyebrow}>Multimodal disinformation detection for Filipino social media</p>
-          <h1 className={styles.heroTitle}>Spot fake content before it spreads</h1>
+          <p className={styles.heroEyebrow}>Multimodal disinformation detection</p>
+          <h1 className={styles.heroTitle}>Detect fake content before it spreads</h1>
           <p className={styles.heroDesc}>
             Submit a social media post and PRISM routes it through independent text, image, and video
             forensic modules. Confidence scores are fused into a single credibility verdict with
