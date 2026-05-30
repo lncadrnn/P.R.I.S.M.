@@ -35,7 +35,7 @@ from sklearn.metrics import f1_score, classification_report
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../api"))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
-from modules.text.model import TextClassifier
+from modules.text.model import TextClassifier, MODEL_ID
 from training.text.dataset import TextForensicsDataset, TRAIN_MAX_LENGTH
 
 
@@ -56,9 +56,29 @@ def parse_args():
     p.add_argument("--output", default="models/text_detector.pt",
                    help="Path to save the best checkpoint")
     p.add_argument("--max-length", type=int, default=TRAIN_MAX_LENGTH,
-                   help="Maximum token sequence length for the tokenizer (default: 256)")
+                   help="Maximum token sequence length for the tokenizer "
+                        "(default: 256; use 128 for faster CPU runs)")
     p.add_argument("--device", default=None,
                    help="'cuda' or 'cpu' (auto-detected when omitted)")
+    # --- CPU right-sizing flags ---
+    # The production inference backbone (iceman2434/xlm-roberta-base-...) is the
+    # default so the saved checkpoint stays load-compatible with inference. For a
+    # local CPU pre-training run you can swap in a lighter base backbone such as
+    # jcblaise/roberta-tagalog-base or xlm-roberta-base.  NOTE: a checkpoint
+    # trained on a different backbone is NOT loadable by the current inference
+    # TextDetector (which hardcodes MODEL_ID) — use --model-id only for
+    # experimentation / pre-training, then fine-tune on the production backbone
+    # for the deliverable.
+    p.add_argument("--model-id", default=None,
+                   help="HuggingFace backbone id. Defaults to the production "
+                        "MODEL_ID. CPU-friendly options: jcblaise/roberta-tagalog-base, "
+                        "xlm-roberta-base.")
+    p.add_argument("--max-samples", type=int, default=None,
+                   help="Cap the TOTAL number of samples loaded (per-run subsample). "
+                        "Useful to keep a CPU run tractable. Default: no cap.")
+    p.add_argument("--threads", type=int, default=None,
+                   help="torch CPU thread count. Defaults to os.cpu_count() "
+                        "(Ryzen 7 5700G = 16). Ignored on CUDA.")
     return p.parse_args()
 
 
@@ -111,8 +131,33 @@ def main():
     device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
+    # On CPU, cap the intra-op thread pool to the physical/logical core count so
+    # PyTorch saturates the Ryzen 7 5700G (8c/16t) without oversubscription.
+    if device == "cpu":
+        n_threads = args.threads or (os.cpu_count() or 1)
+        torch.set_num_threads(n_threads)
+        print(f"CPU threads: {torch.get_num_threads()}")
+
+    model_id = args.model_id or MODEL_ID
+    if model_id != MODEL_ID:
+        print(
+            f"WARNING: using backbone '{model_id}' instead of the production "
+            f"MODEL_ID '{MODEL_ID}'.\n"
+            "         The resulting checkpoint is NOT loadable by the inference "
+            "TextDetector (which hardcodes MODEL_ID).\n"
+            "         Use a non-default backbone only for CPU pre-training / "
+            "experimentation, then fine-tune on the production backbone."
+        )
+
     # --- Data ---
-    full_ds = TextForensicsDataset(args.data, max_length=args.max_length)
+    # --max-samples caps the TOTAL run; split evenly across the two classes.
+    max_per_class = (args.max_samples // 2) if args.max_samples else None
+    full_ds = TextForensicsDataset(
+        args.data,
+        tokenizer_id=model_id,
+        max_length=args.max_length,
+        max_samples_per_class=max_per_class,
+    )
     counts = full_ds.class_counts()
     print(f"Dataset: {counts}")
 
@@ -138,7 +183,7 @@ def main():
     criterion = nn.CrossEntropyLoss(weight=weights)
 
     # --- Model (Phase 1: freeze backbone, train head only) ---
-    model = TextClassifier(freeze_backbone=True).to(device)
+    model = TextClassifier(model_id=model_id, freeze_backbone=True).to(device)
 
     optimizer = torch.optim.AdamW(
         filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr

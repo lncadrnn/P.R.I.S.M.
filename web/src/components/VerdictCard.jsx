@@ -3,6 +3,44 @@ import styles from './VerdictCard.module.css'
 const LABELS = { fake: 'FAKE', real: 'REAL', unknown: '?' }
 const STUBS  = { text: 'No caption submitted', image: 'No image submitted', video: 'No video submitted' }
 
+// Non-color verdict cues so the verdict is legible without relying on red/green.
+function VerdictIcon({ cls }) {
+  const common = {
+    className: styles.badgeIcon,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 2.2,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    'aria-hidden': true,
+  }
+  if (cls === 'fake') {
+    return (
+      <svg {...common}>
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    )
+  }
+  if (cls === 'real') {
+    return (
+      <svg {...common}>
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    )
+  }
+  return (
+    <svg {...common}>
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+  )
+}
+
 export default function VerdictCard({ result }) {
   const { label, confidence, modules, explanation } = result
   const pct = Math.round(confidence * 100)
@@ -12,6 +50,7 @@ export default function VerdictCard({ result }) {
     <div className={styles.card}>
       <div className={`${styles.verdictHero} ${styles[cls]}`}>
         <div className={`${styles.badge} ${styles[cls]}`}>
+          <VerdictIcon cls={cls} />
           {LABELS[cls] ?? cls.toUpperCase()}
         </div>
         <div className={styles.confidenceRow}>
@@ -39,7 +78,7 @@ export default function VerdictCard({ result }) {
 
       {modules?.image?.explanation?.heatmap_b64 && (
         <div className={styles.heatmap}>
-          <p className={styles.sectionLabel}>GradCAM: image regions that influenced the verdict</p>
+          <p className={styles.sectionLabelXai}>GradCAM: image regions that influenced the verdict</p>
           <img
             src={`data:image/png;base64,${modules.image.explanation.heatmap_b64}`}
             alt="GradCAM heatmap"
@@ -116,14 +155,16 @@ function LimeHighlights({ words, label }) {
   const isFake = label === 'fake'
   return (
     <div className={styles.lime}>
-      <p className={styles.sectionLabel}>LIME: word-level explanation</p>
+      <p className={styles.sectionLabelXai}>LIME: word-level explanation</p>
       <p className={styles.limeText}>
         {words.map((w, i) => {
           const pushesTowardFake = isFake ? w.weight > 0 : w.weight < 0
           const alpha = Math.min(Math.abs(w.weight) * 4, 0.65)
+          // Theme-aware: resolves against the active --fake/--real token in both modes.
+          const pct = Math.round(alpha * 100)
           const bg = pushesTowardFake
-            ? `rgba(248,113,113,${alpha})`
-            : `rgba(52,211,153,${alpha})`
+            ? `color-mix(in srgb, var(--fake) ${pct}%, transparent)`
+            : `color-mix(in srgb, var(--real) ${pct}%, transparent)`
           return (
             <span key={i} className={styles.limeWord} style={{ background: bg }}>
               {w.word}{' '}

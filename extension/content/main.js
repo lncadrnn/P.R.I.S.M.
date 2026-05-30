@@ -96,17 +96,41 @@
   // for popstate to restart the scanner when the URL changes.
   // ---------------------------------------------------------------------------
 
-  let currentUrl = location.href;
+  // We track ONLY location.pathname. Facebook/TikTok/X mutate the query string
+  // and hash constantly (scroll position, story rails, modal state) without
+  // rebuilding the feed — restarting on those is wasteful and drops in-flight
+  // scans. A real feed swap (feed → profile → feed) always changes the path.
+  let currentPath = location.pathname;
 
+  let navDebounceTimer = null;
+  let restartTimer = null;
+
+  /**
+   * Restart the scanner. Safe to call repeatedly — stopScanner() is a no-op when
+   * the observer is already disconnected, and initScanner() guards against double
+   * starts. We give the SPA a short moment to paint the new feed before observing.
+   */
+  function restartScanner() {
+    clearTimeout(restartTimer);
+    stopScanner();
+    restartTimer = setTimeout(() => initScanner(), 800);
+  }
+
+  /**
+   * React to a potential SPA navigation. Debounced (~300ms) because a single
+   * user navigation can fire pushState + replaceState + popstate in quick
+   * succession; we only want one restart.
+   */
   function handleNavigation() {
-    const newUrl = location.href;
-    if (newUrl !== currentUrl) {
-      currentUrl = newUrl;
-      console.log("[PRISM] SPA navigation detected, restarting scanner.");
-      stopScanner();
-      // Give the SPA a short moment to paint the new feed before we observe.
-      setTimeout(() => initScanner(), 800);
-    }
+    clearTimeout(navDebounceTimer);
+    navDebounceTimer = setTimeout(() => {
+      const newPath = location.pathname;
+      if (newPath !== currentPath) {
+        currentPath = newPath;
+        console.log("[PRISM] SPA navigation detected, restarting scanner.");
+        restartScanner();
+      }
+    }, 300);
   }
 
   // Patch pushState / replaceState — these fire no native events.

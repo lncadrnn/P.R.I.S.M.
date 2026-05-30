@@ -26,9 +26,9 @@ _TRANSFORM = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-_MODEL_PATH_DEFAULT = os.path.join(
-    os.path.dirname(__file__), "../../../models/image_detector.pt"
-)
+# Repo root = .../PRISM (this file is at PRISM/api/modules/image/detector.py).
+_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+_MODEL_PATH_DEFAULT = os.path.join(_PROJECT_ROOT, "models", "image_detector.pt")
 
 
 class ImageDetector:
@@ -41,9 +41,14 @@ class ImageDetector:
         if path and os.path.isfile(path):
             state = torch.load(path, map_location=self.device, weights_only=True)
             self.model.load_state_dict(state)
+            self.trained = True
             print(f"[ImageDetector] Loaded weights from {path}")
         else:
-            print("[ImageDetector] No weights found — running untrained model (demo only)")
+            # No fine-tuned weights: the classification head is randomly
+            # initialised, so any confidence would be meaningless. The detector
+            # ABSTAINS (label='unknown') rather than fabricating a verdict.
+            self.trained = False
+            print("[ImageDetector] No weights found — abstaining (train via training/image/)")
 
         self.model.eval()
         self.gradcam = GradCAM(self.model.cnn_last_layer())
@@ -53,6 +58,22 @@ class ImageDetector:
         return self.model(tensor)
 
     def predict(self, image: Image.Image) -> VerdictResponse:
+        # Untrained model abstains so it cannot corrupt the fused verdict.
+        if not self.trained:
+            return VerdictResponse(
+                label="unknown",
+                confidence=0.0,
+                explanation={
+                    "method": "GradCAM",
+                    "heatmap_b64": None,
+                    "demo_untrained": True,
+                    "note": (
+                        "Image model has no fine-tuned weights yet, so it abstains "
+                        "from scoring. Train it via training/image/ to enable verdicts."
+                    ),
+                },
+            )
+
         tensor = _TRANSFORM(image).unsqueeze(0).to(self.device)
 
         # Enable gradients only for GradCAM backward pass

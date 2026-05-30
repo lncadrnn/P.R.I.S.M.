@@ -43,6 +43,9 @@ models/
 
 # Datasets (document sources in README instead)
 data/
+FakeNewsNet/
+fakenewsnet/
+*.csv.gz
 
 # Node / JS
 node_modules/

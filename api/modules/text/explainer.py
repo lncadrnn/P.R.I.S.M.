@@ -1,9 +1,9 @@
-"""
+r"""
 LIMETextExplainer: word-level importance scores for the TextClassifier.
 
 Design choices for Taglish (Filipino/English code-switched text):
   - split_expression=str.split       : word-level tokenisation; the default
-                                       r'\W+' regex can mangle hyphenated
+                                       \W+ regex can mangle hyphenated
                                        Tagalog compounds.
   - bow=False                        : word order matters for transformers.
   - mask_string=tokenizer.unk_token  : keep perturbed strings in-vocabulary

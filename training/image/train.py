@@ -21,7 +21,7 @@ import sys
 
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, Subset
 from sklearn.metrics import f1_score, classification_report
 
 # Allow running from repo root: python training/image/train.py
@@ -83,18 +83,33 @@ def main():
     print(f"Device: {device}")
 
     # --- Data ---
+    # Build two separate dataset instances so their transforms are independent.
+    # Sharing a single dataset and patching .transform on the Subset would also
+    # change the transform for the training split (both Subsets hold a reference
+    # to the same underlying Dataset object), silently disabling augmentation.
+    # This mirrors the pattern used in training/video/train.py.
     full_ds = ImageForensicsDataset(args.data, augment=True)
     counts = full_ds.class_counts()
     print(f"Dataset: {counts}")
 
-    val_n = int(len(full_ds) * args.val_split)
+    val_n = max(1, int(len(full_ds) * args.val_split))
     train_n = len(full_ds) - val_n
-    train_ds, val_ds = random_split(full_ds, [train_n, val_n])
-    # Val should not augment
-    val_ds.dataset.transform = full_ds.__class__(args.data, augment=False).transform
 
-    train_loader = DataLoader(train_ds, batch_size=args.batch, shuffle=True, num_workers=4)
-    val_loader = DataLoader(val_ds, batch_size=args.batch, shuffle=False, num_workers=4)
+    # Determine the split indices once, then apply them to both dataset variants.
+    all_indices = list(range(len(full_ds)))
+    train_indices = all_indices[:train_n]
+    val_indices = all_indices[train_n:]
+
+    train_ds = Subset(full_ds, train_indices)
+
+    # Validation uses a non-augmented copy so we don't touch full_ds.transform.
+    val_ds_base = ImageForensicsDataset(args.data, augment=False)
+    val_ds = Subset(val_ds_base, val_indices)
+
+    # num_workers=0 on Windows to avoid DataLoader fork/pickling issues.
+    num_workers = 0 if os.name == "nt" else 4
+    train_loader = DataLoader(train_ds, batch_size=args.batch, shuffle=True, num_workers=num_workers)
+    val_loader = DataLoader(val_ds, batch_size=args.batch, shuffle=False, num_workers=num_workers)
 
     # Class-weighted loss to handle potential imbalance
     real_n, fake_n = counts["real"], counts["fake"]

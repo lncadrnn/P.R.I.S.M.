@@ -14,8 +14,8 @@ class VerdictResponse(BaseModel):
 
 
 class ScanResponse(BaseModel):
-    """Final fused verdict returned by POST /scan."""
-    label: str
-    confidence: float
+    """Final fused verdict returned by POST /scan. Same constraints as a module verdict."""
+    label: str = Field(..., pattern="^(real|fake|unknown)$")
+    confidence: float = Field(..., ge=0.0, le=1.0)
     modules: dict[str, VerdictResponse | None]
     explanation: dict[str, Any]

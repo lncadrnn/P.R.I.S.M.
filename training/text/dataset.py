@@ -60,6 +60,7 @@ class TextForensicsDataset(Dataset):
         data_dir: str | Path,
         tokenizer_id: str = MODEL_ID,
         max_length: int = TRAIN_MAX_LENGTH,
+        max_samples_per_class: int | None = None,
     ):
         self.max_length = max_length
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_id)
@@ -82,6 +83,10 @@ class TextForensicsDataset(Dataset):
             # Drop rows with null/empty text
             df = df.dropna(subset=["text"])
             df = df[df["text"].str.strip() != ""]
+            # Optional per-class cap to keep CPU runs tractable. Sampled (not
+            # head-sliced) so the subset stays representative of the file.
+            if max_samples_per_class is not None and len(df) > max_samples_per_class:
+                df = df.sample(n=max_samples_per_class, random_state=42)
             for text in df["text"].tolist():
                 self.samples.append((str(text), label))
 

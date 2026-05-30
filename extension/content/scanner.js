@@ -41,9 +41,15 @@ const PLATFORM = (() => {
 const PLATFORM_CONFIG = {
   facebook: {
     // Only target feed units — NOT Messenger chat, NOT groups sidebar.
-    // data-pagelet="FeedUnit_N" is Facebook's stable feed post identifier.
-    // Avoid div[role='article'] — it also matches Messenger messages.
-    rootSelector: '[data-pagelet^="FeedUnit"]',
+    // data-pagelet="FeedUnit_N" is Facebook's stable feed post identifier, BUT
+    // it is frequently absent on the modern feed. Resilient fallback:
+    // div[role="article"] scoped to WITHIN div[role="feed"] so it does not match
+    // Messenger threads or sidebar articles. The EXCLUDED_REGIONS guard in
+    // processPost remains the second line of defence against chat/sidebar.
+    rootSelector: [
+      '[data-pagelet^="FeedUnit"]',
+      'div[role="feed"] div[role="article"]',
+    ].join(", "),
     textSelectors: [
       '[data-ad-preview="message"]',
       "[data-testid='post_message']",
@@ -94,22 +100,60 @@ const PLATFORM_CONFIG = {
 
 const config = PLATFORM_CONFIG[PLATFORM] || PLATFORM_CONFIG.unknown;
 
+// Dev-mode flag: unpacked extensions have no update_url in their manifest.
+// Used to surface selector breakage (0 posts on a known platform) without
+// spamming the console for end users.
+const DEV_MODE = (() => {
+  try {
+    return !("update_url" in chrome.runtime.getManifest());
+  } catch (_) {
+    return false;
+  }
+})();
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-let postCounter = 0;
+/**
+ * 32-bit FNV-1a hash of a string, returned as 8-char hex.
+ *
+ * Chosen deliberately over crypto.subtle: this runs in the content-script hot
+ * path (every observed post) and must be SYNCHRONOUS — async hashing would race
+ * the "already-scanned" guard and re-dispatch posts. FNV-1a is fast, allocation
+ * free, and collision-resistant enough for de-duplicating feed posts.
+ *
+ * @param {string} str  Input string.
+ * @returns {string}    8-char lowercase hex digest.
+ */
+function fnv1aHash(str) {
+  let hash = 0x811c9dc5; // FNV offset basis (2166136261)
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    // 32-bit FNV prime multiply via shifts to stay within int32 math.
+    hash = Math.imul(hash, 0x01000193);
+  }
+  // Coerce to unsigned 32-bit, then hex-pad.
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
 
 /**
- * Assign a stable numeric ID to a DOM element that does not already have one.
- * Uses a data attribute so subsequent observer callbacks skip already-seen posts.
+ * Derive a STABLE, content-based post ID from the post's text + first image URL.
+ *
+ * Virtualized feeds (TikTok, X, modern FB) detach and re-add the same post as
+ * the user scrolls. An incrementing counter would mint a fresh ID each time,
+ * causing re-dispatch and dropping cached verdicts. Hashing the content means a
+ * re-added post resolves to the SAME id and can reattach its cached verdict.
  *
  * @param {Element} el  Post root element.
- * @returns {string}    Stable post ID string.
+ * @returns {string}    Stable content-derived post ID string.
  */
 function getOrAssignPostId(el) {
   if (!el.dataset.prismId) {
-    el.dataset.prismId = `prism-${PLATFORM}-${++postCounter}`;
+    const text = extractText(el);
+    const firstImage = extractImageUrls(el)[0] || "";
+    const fingerprint = `${PLATFORM}|${text}|${firstImage}`;
+    el.dataset.prismId = `prism-${PLATFORM}-${fnv1aHash(fingerprint)}`;
   }
   return el.dataset.prismId;
 }
@@ -304,6 +348,17 @@ function initScanner() {
   // Process all posts already visible on load.
   const initial = findAllPosts();
   console.log(`[PRISM Scanner] Initial posts found: ${initial.length}`);
+
+  // Surface selector breakage: a known platform yielding 0 posts almost always
+  // means the site changed its DOM and our rootSelector needs updating.
+  if (DEV_MODE && PLATFORM !== "unknown" && initial.length === 0) {
+    console.warn(
+      `[PRISM Scanner] 0 initial posts on "${PLATFORM}" — selectors may be ` +
+        `stale. rootSelector="${config.rootSelector}". The MutationObserver ` +
+        `will still pick up posts as they render.`
+    );
+  }
+
   initial.forEach(processPost);
 
   // Watch for new posts added by infinite scroll / SPA navigation.

@@ -9,8 +9,28 @@
  *  - Forward verdicts back to the originating tab via chrome.tabs.sendMessage
  */
 
-const API_BASE = "http://127.0.0.1:8000";
-const SCAN_ENDPOINT = `${API_BASE}/scan/extension`;
+// Default backend target. Overridable at runtime via chrome.storage.local
+// under the key "prismApiBase" (e.g. to point at a LAN dev box). The scan
+// endpoint is always derived as `${base}/scan/extension`.
+const DEFAULT_API_BASE = "http://127.0.0.1:8000";
+
+/**
+ * Resolve the scan endpoint, honouring a chrome.storage.local override.
+ *
+ * @returns {Promise<string>} Fully-qualified /scan/extension URL.
+ */
+async function getScanEndpoint() {
+  let base = DEFAULT_API_BASE;
+  try {
+    const { prismApiBase } = await chrome.storage.local.get("prismApiBase");
+    if (typeof prismApiBase === "string" && prismApiBase.trim()) {
+      base = prismApiBase.trim().replace(/\/+$/, ""); // strip trailing slashes
+    }
+  } catch (_) {
+    // storage unavailable — fall back to default.
+  }
+  return `${base}/scan/extension`;
+}
 
 // In-memory deduplication map: hash -> Promise<verdict>
 // This prevents concurrent duplicate requests for the same post within a session.
@@ -83,7 +103,8 @@ async function setCached(key, verdict) {
  */
 async function callPrismAPI(payload) {
   try {
-    const response = await fetch(SCAN_ENDPOINT, {
+    const endpoint = await getScanEndpoint();
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -118,9 +139,9 @@ function buildErrorVerdict(reason) {
   return {
     label: "unknown",
     confidence: 0,
+    modules: { text: null, image: null, video: null },
     explanation: {
       error: reason,
-      highlights: [],
     },
   };
 }
@@ -172,7 +193,7 @@ async function handleScanPost(message, sender) {
 // Message listener
 // ---------------------------------------------------------------------------
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender) => {
   if (message.type !== "PRISM_SCAN_POST") {
     return false; // Let other handlers process unrecognised messages.
   }
@@ -184,18 +205,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   const tabId = sender.tab.id;
 
-  // We must return true to keep the channel open for async sendResponse.
+  // Single delivery path: verdicts are ALWAYS broadcast to the originating tab
+  // via chrome.tabs.sendMessage, keyed by postId. The content script's
+  // PRISM_VERDICT listener (main.js) maps postId → element and renders. We do
+  // not use sendResponse — the request/response channel is dead weight here.
   handleScanPost(message, sender)
     .then((result) => {
-      // Forward the verdict back to the content script that made the request.
       chrome.tabs.sendMessage(tabId, {
         type: "PRISM_VERDICT",
         postId: result.postId,
         verdict: result.verdict,
         fromCache: result.fromCache,
       });
-      // Also reply directly in case sendResponse is still connected.
-      sendResponse({ ok: true });
     })
     .catch((err) => {
       console.error("[PRISM] Unexpected error in handleScanPost:", err);
@@ -205,14 +226,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         verdict: buildErrorVerdict(err.message),
         fromCache: false,
       });
-      sendResponse({ ok: false, error: err.message });
     });
 
-  return true; // Keep the message channel open.
+  // Return false: we are not using sendResponse, so there is no need to keep
+  // the message channel open.
+  return false;
 });
 
 // ---------------------------------------------------------------------------
 // Startup log
 // ---------------------------------------------------------------------------
 
-console.log("[PRISM] Service worker started. API target:", SCAN_ENDPOINT);
+getScanEndpoint().then((endpoint) =>
+  console.log("[PRISM] Service worker started. API target:", endpoint)
+);

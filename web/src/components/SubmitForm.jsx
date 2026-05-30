@@ -29,6 +29,17 @@ export default function SubmitForm({ onResult, disabled }) {
     if (fileRef.current) fileRef.current.value = ''
   }
 
+  function openPicker() {
+    if (!imagePreview) fileRef.current?.click()
+  }
+
+  function onDropzoneKeyDown(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      openPicker()
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     if (!text.trim() && !imageFile) {
@@ -52,8 +63,9 @@ export default function SubmitForm({ onResult, disabled }) {
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.field}>
-        <label className={styles.label}>Caption / Text</label>
+        <label className={styles.label} htmlFor="prism-caption">Caption / Text</label>
         <textarea
+          id="prism-caption"
           className={styles.textarea}
           placeholder="Paste a social media caption here (Taglish or English)"
           value={text}
@@ -63,13 +75,17 @@ export default function SubmitForm({ onResult, disabled }) {
       </div>
 
       <div className={styles.field}>
-        <label className={styles.label}>Image</label>
+        <label className={styles.label} htmlFor="prism-image">Image</label>
         <div
           className={`${styles.dropzone} ${dragging ? styles.dragging : ''} ${imagePreview ? styles.hasImage : ''}`}
+          role="button"
+          tabIndex={imagePreview ? -1 : 0}
+          aria-label="Upload an image: drag and drop, or activate to browse files"
           onDragOver={e => { e.preventDefault(); setDragging(true) }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
-          onClick={() => !imagePreview && fileRef.current?.click()}
+          onClick={openPicker}
+          onKeyDown={onDropzoneKeyDown}
         >
           {imagePreview ? (
             <div className={styles.previewWrap}>
@@ -87,6 +103,7 @@ export default function SubmitForm({ onResult, disabled }) {
           )}
         </div>
         <input
+          id="prism-image"
           ref={fileRef}
           type="file"
           accept="image/*"

@@ -218,18 +218,82 @@
   line-height: 1.4;
 }
 
-/* Words that pushed toward "fake" */
-.prism-chip-fake {
+/* Words that support the verdict (direction: "supports") */
+.prism-chip-supports {
   background-color: rgba(229, 57, 53, 0.25);
   color: #ff8a80;
   border: 1px solid rgba(229, 57, 53, 0.4);
 }
 
-/* Words that pushed toward "real" */
-.prism-chip-real {
+/* Words that oppose the verdict (direction: "opposes") */
+.prism-chip-opposes {
   background-color: rgba(67, 160, 71, 0.2);
   color: #b9f6ca;
   border: 1px solid rgba(67, 160, 71, 0.35);
+}
+
+/* -------------------------------------------------------------------------
+   Summary paragraph — human-readable verdict reasoning
+   ------------------------------------------------------------------------- */
+
+.prism-tooltip-summary {
+  margin: 6px 0 8px;
+  padding: 6px 8px;
+  background: #2c2c2e;
+  border-radius: 6px;
+  color: #d1d1d6;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* -------------------------------------------------------------------------
+   Reason rows — categorised signals, colour-coded by severity
+   ------------------------------------------------------------------------- */
+
+.prism-reason {
+  margin-bottom: 5px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border-left: 3px solid #636366;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.prism-reason:last-of-type {
+  margin-bottom: 0;
+}
+
+.prism-reason-category {
+  font-weight: 700;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.prism-reason-detail {
+  color: #c7c7cc;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* Severity colours — left border + category text */
+.prism-reason-high {
+  border-left-color: #e53935;
+}
+.prism-reason-high .prism-reason-category {
+  color: #ff6b6b;
+}
+
+.prism-reason-medium {
+  border-left-color: #fb8c00;
+}
+.prism-reason-medium .prism-reason-category {
+  color: #ffb74d;
+}
+
+.prism-reason-low {
+  border-left-color: #fdd835;
+}
+.prism-reason-low .prism-reason-category {
+  color: #fff176;
 }
 
 /* -------------------------------------------------------------------------

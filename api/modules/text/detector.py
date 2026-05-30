@@ -23,10 +23,12 @@ from .model import TextClassifier, load_tokenizer, MODEL_ID, MAX_LENGTH
 from .explainer import LIMETextExplainer
 from schemas.verdict import VerdictResponse
 
-
-_MODEL_PATH_DEFAULT = os.path.join(
-    os.path.dirname(__file__), "../../../models/text_detector.pt"
-)
+# Repo root = .../PRISM (this file is at PRISM/api/modules/text/detector.py).
+# Resolve the models dir from there so inference loads exactly what training
+# writes (PRISM/models/text_detector.pt) — the old "../../../models" resolved
+# to D:/VSC Projects/models, OUTSIDE the repo, so no checkpoint ever loaded.
+_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+_MODEL_PATH_DEFAULT = os.path.join(_PROJECT_ROOT, "models", "text_detector.pt")
 
 
 class TextDetector:
@@ -53,20 +55,31 @@ class TextDetector:
         self.model = TextClassifier(model_id=MODEL_ID)
         self.model.to(self.device)
 
+        # Which logit column means "fake", read from the model's own config.
+        self.fake_idx = self.model.fake_index()
+        self.real_idx = 1 - self.fake_idx
+
         path = model_path or _MODEL_PATH_DEFAULT
         if path and os.path.isfile(path):
             state = torch.load(path, map_location=self.device, weights_only=True)
             self.model.load_state_dict(state)
-            print(f"[TextDetector] Loaded weights from {path}")
+            self.fake_idx = self.model.fake_index()
+            self.real_idx = 1 - self.fake_idx
+            print(f"[TextDetector] Loaded fine-tuned weights from {path}")
         else:
-            print("[TextDetector] No weights found — running untrained model (demo only)")
+            # MODEL_ID is a fine-tuned classifier with a trained head, so this is
+            # still a real, accurate model — not an untrained demo fallback.
+            print(f"[TextDetector] Using hub checkpoint {MODEL_ID} (no local fine-tune found)")
 
         self.model.eval()
 
-        # LIME explainer — shares the tokenizer's unk_token for masking
+        # LIME explainer — shares the tokenizer's unk_token for masking.
+        # 400 samples balances explanation stability against CPU latency; 1500
+        # was several seconds per scan on the consumer-CPU target and broke the
+        # real-time scrolling goal. Raise for the manual web app if desired.
         self.explainer = LIMETextExplainer(
             tokenizer=self.tokenizer,
-            num_samples=1500,
+            num_samples=400,
         )
 
     # ------------------------------------------------------------------
@@ -96,15 +109,17 @@ class TextDetector:
 
         Returns
         -------
-        np.ndarray of shape (N, 2) — [P(real), P(fake)] per row.
+        np.ndarray of shape (N, 2) — [P(real), P(fake)] per row, reordered to
+        match LIME's CLASS_NAMES=["real","fake"] regardless of the model's
+        internal label order.
         """
         encoded = self._tokenize(texts)
         logits = self.model(
             input_ids=encoded["input_ids"],
             attention_mask=encoded["attention_mask"],
         )  # (N, 2)
-        probs = F.softmax(logits, dim=-1)
-        return probs.cpu().numpy()
+        probs = F.softmax(logits, dim=-1).cpu().numpy()
+        return np.stack([probs[:, self.real_idx], probs[:, self.fake_idx]], axis=1)
 
     # ------------------------------------------------------------------
     # Public API
@@ -133,8 +148,8 @@ class TextDetector:
                 input_ids=encoded["input_ids"],
                 attention_mask=encoded["attention_mask"],
             )  # (1, 2)
-        probs = F.softmax(logits, dim=-1)          # (1, 2)
-        fake_prob = probs[0, 1].item()             # P(fake)
+        probs = F.softmax(logits, dim=-1)          # (1, 2) in model label order
+        fake_prob = probs[0, self.fake_idx].item() # P(fake)
 
         label = "fake" if fake_prob >= 0.5 else "real"
 

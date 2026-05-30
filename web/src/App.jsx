@@ -21,6 +21,10 @@ function MoonIcon() {
   )
 }
 
+// API docs URL is driven from env so it works in deployed environments,
+// not just the local dev proxy. Falls back to the localhost dev server.
+const API_DOCS_URL = `${import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'}/docs`
+
 function MockVerdictCard() {
   return (
     <div className={styles.mockCard}>
@@ -30,7 +34,14 @@ function MockVerdictCard() {
       </div>
       <div className={styles.mockBody}>
         <div className={styles.mockVerdict}>
-          <div className={styles.mockBadgeFake}>FAKE</div>
+          <div className={styles.mockBadgeFake}>
+            <svg className={styles.mockBadgeIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            FAKE
+          </div>
           <div className={styles.mockConfRow}>
             <div className={styles.mockBar}>
               <div className={styles.mockBarFill} style={{ width: '87%' }} />
@@ -66,7 +77,7 @@ function MockVerdictCard() {
             <span className={styles.mockStubTxt}>No video submitted</span>
           </div>
         </div>
-        <p className={styles.mockLabel}>LIME: word-level explanation</p>
+        <p className={styles.mockLabelXai}>LIME: word-level explanation</p>
         <p className={styles.mockLime}>
           <span className={styles.mockWFakeH}>BREAKING</span>{' '}
           <span>ang </span>
@@ -115,11 +126,17 @@ export default function App() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
   const scanRef = useRef(null)
+  const resultRef = useRef(null)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('prism-theme', theme)
   }, [theme])
+
+  // Bring the verdict panel into view once a result arrives.
+  useEffect(() => {
+    if (result) resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [result])
 
   useEffect(() => {
     checkHealth()
@@ -154,7 +171,7 @@ export default function App() {
         <nav className={styles.nav}>
           <a href="#how-it-works" className={styles.navLink}>How it works</a>
           <a href="#modules" className={styles.navLink}>Modules</a>
-          <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer" className={styles.navLink}>API docs</a>
+          <a href={API_DOCS_URL} target="_blank" rel="noreferrer" className={styles.navLink}>API docs</a>
         </nav>
         <div className={styles.headerRight}>
           <div className={`${styles.statusPill} ${statusClass}`}>
@@ -182,12 +199,12 @@ export default function App() {
           </p>
           <div className={styles.heroActions}>
             <button className={styles.heroCta} onClick={scrollToScan}>Scan a post</button>
-            <a href="/docs/PRISM.pdf" className={styles.heroSecondary} target="_blank" rel="noreferrer">Read the paper</a>
+            <a href={API_DOCS_URL} className={styles.heroSecondary} target="_blank" rel="noreferrer">View API docs</a>
           </div>
           <div className={styles.heroBadges}>
             <span className={styles.heroBadge}>Filipino / Taglish</span>
             <span className={styles.heroBadge}>Facebook, TikTok, X</span>
-            <span className={styles.heroBadge}>Explainable AI</span>
+            <span className={`${styles.heroBadge} ${styles.heroBadgeXai}`}>Explainable AI</span>
             <span className={styles.heroBadge}>Late fusion</span>
           </div>
         </div>
@@ -276,7 +293,7 @@ export default function App() {
             </div>
 
             {result && (
-              <div className={styles.panel}>
+              <div className={styles.panel} ref={resultRef} aria-live="polite">
                 <div className={styles.panelHeader}>
                   <span className={styles.panelTag}>Output</span>
                   <span className={styles.panelTitle}>Verdict</span>
@@ -297,8 +314,8 @@ export default function App() {
             <span>Next Gen Start-up Competition 2026, Mapua University Makati</span>
           </div>
           <div className={styles.footerRight}>
-            <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer">API docs</a>
-            <a href="/docs/PRISM.pdf" target="_blank" rel="noreferrer">Research paper</a>
+            <a href={API_DOCS_URL} target="_blank" rel="noreferrer">API docs</a>
+            {/* Research paper link omitted — the PDF is not yet published. */}
           </div>
         </div>
       </footer>

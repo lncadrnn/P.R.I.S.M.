@@ -1,0 +1,18 @@
+# PRISM training dependencies.
+#
+# CPU build (local text training on Ryzen 7 5700G, no CUDA GPU):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r training/requirements.txt
+#
+# GPU build (Colab/Kaggle for image + video): torch/torchvision come
+# pre-installed with CUDA — skip the CPU index URL and just install the rest.
+
+torch>=2.3.0
+torchvision>=0.18.0
+transformers>=4.45.0
+datasets>=2.20.0
+accelerate>=0.34.0
+pandas>=2.0.0
+scikit-learn>=1.5.0
+opencv-python>=4.9.0
+Pillow>=10.0.0

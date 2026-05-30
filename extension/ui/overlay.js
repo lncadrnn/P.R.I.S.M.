@@ -10,7 +10,8 @@
  * disrupting the document flow.  The post element receives `position: relative`
  * only if it is currently `static`, which is the minimal intervention needed.
  *
- * Hover reveals a tooltip with the confidence score and explanation highlights.
+ * Hover reveals a tooltip with the confidence score and the per-module
+ * explanation (summary, severity-coded reasons, and LIME key-word chips).
  */
 
 // ---------------------------------------------------------------------------
@@ -50,20 +51,54 @@ function fmtConfidence(confidence) {
 }
 
 /**
- * Build the tooltip HTML from the verdict explanation object.
- * Handles word/phrase highlights (text module) and generic explanations.
+ * Map a severity string to its tooltip row CSS class.
  *
- * @param {Object} verdict
+ * @param {string} severity  "high" | "medium" | "low"
+ * @returns {string}         CSS class suffix.
+ */
+function severityToClass(severity) {
+  switch ((severity || "").toLowerCase()) {
+    case "high":
+      return "high";
+    case "medium":
+      return "medium";
+    case "low":
+      return "low";
+    default:
+      return "low";
+  }
+}
+
+/**
+ * Build the tooltip HTML from a FUSED ScanResponse.
+ *
+ * The /scan/extension endpoint returns:
+ *   {
+ *     label, confidence,                         // fused, top-level
+ *     modules: { text, image, video },           // each a VerdictResponse|null
+ *     explanation: { fusion_score, modules_used, weights_applied }  // fusion payload
+ *   }
+ *
+ * The rich, human-readable text explanation lives at
+ * verdict.modules.text.explanation, with shape:
+ *   { method, summary, reasons:[{category,detail,severity,matched}],
+ *     top_words:[{word,weight,direction}] }
+ *
+ * The top-level `explanation` is the fusion payload (NOT rich text), so we read
+ * the per-module explanation here. confidence on every level = P(fake).
+ *
+ * @param {Object} verdict  Fused ScanResponse.
  * @returns {string}  Inner HTML for the tooltip content area.
  */
 function buildTooltipContent(verdict) {
-  const { label, confidence, explanation } = verdict;
+  const { label, confidence, explanation, modules } = verdict;
   const lines = [];
 
+  // --- Fused verdict header (top-level label + confidence) ---
   lines.push(
     `<div class="prism-tooltip-row prism-tooltip-label">` +
       `<span class="prism-tip-key">Verdict:</span> ` +
-      `<span class="prism-tip-val prism-tip-${labelToClass(label)}">${(label || "unknown").toUpperCase()}</span>` +
+      `<span class="prism-tip-val prism-tip-${labelToClass(label)}">${escapeHtml((label || "unknown").toUpperCase())}</span>` +
       `</div>`
   );
 
@@ -74,61 +109,81 @@ function buildTooltipContent(verdict) {
       `</div>`
   );
 
-  if (explanation) {
-    // Error state
-    if (explanation.error) {
+  // --- Error path: top-level fusion explanation may carry an error ---
+  // (e.g. "no modalities analysed", or a service-worker buildErrorVerdict).
+  if (explanation && explanation.error) {
+    lines.push(
+      `<div class="prism-tooltip-row prism-tooltip-error">${escapeHtml(String(explanation.error))}</div>`
+    );
+  }
+
+  // --- Rich text-module explanation lives at modules.text.explanation ---
+  const textModule = modules && modules.text;
+  const textExp = textModule && textModule.explanation;
+
+  if (textExp) {
+    // A module-level error (rare, but render it too).
+    if (textExp.error) {
       lines.push(
-        `<div class="prism-tooltip-row prism-tooltip-error">${escapeHtml(String(explanation.error))}</div>`
+        `<div class="prism-tooltip-row prism-tooltip-error">${escapeHtml(String(textExp.error))}</div>`
       );
     }
 
-    // LIME / Anchors word highlights: [{ word, weight }]
-    if (
-      Array.isArray(explanation.highlights) &&
-      explanation.highlights.length > 0
-    ) {
+    // Summary paragraph — human-readable verdict reasoning.
+    if (textExp.summary) {
+      lines.push(
+        `<div class="prism-tooltip-summary">${escapeHtml(String(textExp.summary))}</div>`
+      );
+    }
+
+    // Reasons — categorised signals, each colour-coded by severity.
+    if (Array.isArray(textExp.reasons) && textExp.reasons.length > 0) {
+      lines.push(`<div class="prism-tooltip-row prism-tip-key">Why:</div>`);
+      const rows = textExp.reasons
+        .slice(0, 5)
+        .map((r) => {
+          const sev = severityToClass(r.severity);
+          const category = escapeHtml(String(r.category || ""));
+          const detail = escapeHtml(String(r.detail || ""));
+          return (
+            `<div class="prism-reason prism-reason-${sev}">` +
+              `<div class="prism-reason-category">${category}</div>` +
+              `<div class="prism-reason-detail">${detail}</div>` +
+              `</div>`
+          );
+        })
+        .join("");
+      lines.push(rows);
+    }
+
+    // LIME word weights — chips coloured by `.direction`, NOT weight sign.
+    // direction "supports" = toward the verdict; "opposes" = against it.
+    if (Array.isArray(textExp.top_words) && textExp.top_words.length > 0) {
       lines.push(`<div class="prism-tooltip-row prism-tip-key">Key words:</div>`);
-      // Determine chip color relative to the verdict label:
-      // For a "fake" verdict, positive weight pushed toward fake (red chip).
-      // For a "real" verdict, positive weight pushed toward real (green chip).
-      // Any other label falls back to the fake-direction heuristic.
-      const isFakeVerdict = labelToClass(label) === "fake";
-      const chips = explanation.highlights
+      const chips = textExp.top_words
         .slice(0, 8)
-        .map((h) => {
-          const pushesTowardFake = isFakeVerdict ? h.weight > 0 : h.weight < 0;
-          const cls = pushesTowardFake ? "prism-chip-fake" : "prism-chip-real";
-          const word = h.word || h.phrase || "";
-          return `<span class="prism-chip ${cls}">${escapeHtml(word)}</span>`;
+        .map((w) => {
+          const supports = (w.direction || "").toLowerCase() === "supports";
+          const cls = supports ? "prism-chip-supports" : "prism-chip-opposes";
+          const word = escapeHtml(String(w.word || ""));
+          return `<span class="prism-chip ${cls}">${word}</span>`;
         })
         .join("");
       lines.push(`<div class="prism-tooltip-chips">${chips}</div>`);
     }
+  }
 
-    // Anchors rule description
-    if (explanation.anchor_rule) {
-      lines.push(
-        `<div class="prism-tooltip-row">` +
-          `<span class="prism-tip-key">Anchor rule:</span> ` +
-          `<span class="prism-tip-val">${escapeHtml(String(explanation.anchor_rule))}</span>` +
-          `</div>`
-      );
-    }
-
-    // Modality breakdown
-    if (explanation.modality_scores) {
-      const { text, image, video } = explanation.modality_scores;
-      const parts = [];
-      if (text != null) parts.push(`Text: ${fmtConfidence(text)}`);
-      if (image != null) parts.push(`Image: ${fmtConfidence(image)}`);
-      if (video != null) parts.push(`Video: ${fmtConfidence(video)}`);
-      if (parts.length > 0) {
-        lines.push(
-          `<div class="prism-tooltip-row prism-tip-key">Modalities: </div>` +
-            `<div class="prism-tooltip-row">${parts.join(" · ")}</div>`
-        );
-      }
-    }
+  // --- Image module summary (if present): show its label + confidence ---
+  const imageModule = modules && modules.image;
+  if (imageModule) {
+    lines.push(
+      `<div class="prism-tooltip-row">` +
+        `<span class="prism-tip-key">Image:</span> ` +
+        `<span class="prism-tip-val prism-tip-${labelToClass(imageModule.label)}">` +
+          `${escapeHtml((imageModule.label || "unknown").toUpperCase())} ${fmtConfidence(imageModule.confidence)}` +
+        `</span>` +
+        `</div>`
+    );
   }
 
   lines.push(
@@ -242,7 +297,8 @@ function setScanning(postEl, postId) {
  * Must be idempotent — calling it twice on the same element replaces the old badge.
  *
  * @param {Element} element  Post root element.
- * @param {Object}  verdict  Shared verdict schema: { label, confidence, explanation }.
+ * @param {Object}  verdict  Fused ScanResponse:
+ *   { label, confidence, modules:{text,image,video}, explanation }.
  */
 function createVerdictOverlay(element, verdict) {
   if (!element) return;
