@@ -1,8 +1,7 @@
 import styles from './VerdictCard.module.css'
 
-const LABELS   = { fake: 'FAKE',  real: 'REAL',  unknown: '?' }
-const ICONS    = { text: '📝',    image: '🖼️',   video: '🎥' }
-const STUBS    = { text: 'No caption submitted', image: 'No image submitted', video: 'No video submitted' }
+const LABELS = { fake: 'FAKE', real: 'REAL', unknown: '?' }
+const STUBS  = { text: 'No caption submitted', image: 'No image submitted', video: 'No video submitted' }
 
 export default function VerdictCard({ result }) {
   const { label, confidence, modules, explanation } = result
@@ -11,7 +10,6 @@ export default function VerdictCard({ result }) {
 
   return (
     <div className={styles.card}>
-      {/* Verdict hero */}
       <div className={`${styles.verdictHero} ${styles[cls]}`}>
         <div className={`${styles.badge} ${styles[cls]}`}>
           {LABELS[cls] ?? cls.toUpperCase()}
@@ -32,18 +30,16 @@ export default function VerdictCard({ result }) {
         )}
       </div>
 
-      {/* Module breakdown */}
       <p className={styles.modulesLabel}>Module Breakdown</p>
       <div className={styles.modules}>
         {['text','image','video'].map(key => (
-          <ModuleRow key={key} name={key} icon={ICONS[key]} data={modules?.[key]} stub={STUBS[key]} />
+          <ModuleRow key={key} name={key} data={modules?.[key]} stub={STUBS[key]} />
         ))}
       </div>
 
-      {/* GradCAM heatmap */}
       {modules?.image?.explanation?.heatmap_b64 && (
         <div className={styles.heatmap}>
-          <p className={styles.sectionLabel}>GradCAM — image regions that influenced the verdict</p>
+          <p className={styles.sectionLabel}>GradCAM: image regions that influenced the verdict</p>
           <img
             src={`data:image/png;base64,${modules.image.explanation.heatmap_b64}`}
             alt="GradCAM heatmap"
@@ -52,7 +48,6 @@ export default function VerdictCard({ result }) {
         </div>
       )}
 
-      {/* LIME word highlights */}
       {modules?.text?.explanation?.top_words && (
         <LimeHighlights words={modules.text.explanation.top_words} label={modules.text.label} />
       )}
@@ -60,13 +55,12 @@ export default function VerdictCard({ result }) {
   )
 }
 
-function ModuleRow({ name, icon, data, stub }) {
+function ModuleRow({ name, data, stub }) {
   const pct = data ? Math.round(data.confidence * 100) : 0
   const cls = data ? (['fake','real','unknown'].includes(data.label) ? data.label : 'unknown') : null
   return (
     <div className={styles.moduleRow}>
-      <span className={styles.moduleIcon}>{icon}</span>
-      <span className={styles.moduleName}>{name}</span>
+      <span className={styles.moduleKey}>{name}</span>
       {data ? (
         <>
           <span className={`${styles.moduleLabel} ${styles[cls]}`}>{data.label.toUpperCase()}</span>
@@ -86,7 +80,7 @@ function LimeHighlights({ words, label }) {
   const isFake = label === 'fake'
   return (
     <div className={styles.lime}>
-      <p className={styles.sectionLabel}>LIME — word-level explanation</p>
+      <p className={styles.sectionLabel}>LIME: word-level explanation</p>
       <p className={styles.limeText}>
         {words.map((w, i) => {
           const pushesTowardFake = isFake ? w.weight > 0 : w.weight < 0

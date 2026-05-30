@@ -4,7 +4,6 @@
   gap: 20px;
 }
 
-/* ── Verdict hero ── */
 .verdictHero {
   display: flex;
   flex-direction: column;
@@ -26,8 +25,8 @@
   padding: 10px 32px;
   border-radius: 12px;
 }
-.badge.fake    { color: var(--fake);  background: rgba(248,113,113,0.12); border: 1.5px solid rgba(248,113,113,0.35); text-shadow: 0 0 20px rgba(248,113,113,0.4); }
-.badge.real    { color: var(--real);  background: rgba(52,211,153,0.12);  border: 1.5px solid rgba(52,211,153,0.35);  text-shadow: 0 0 20px rgba(52,211,153,0.4); }
+.badge.fake    { color: var(--fake);    background: rgba(248,113,113,0.12); border: 1.5px solid rgba(248,113,113,0.35); text-shadow: 0 0 20px rgba(248,113,113,0.4); }
+.badge.real    { color: var(--real);    background: rgba(52,211,153,0.12);  border: 1.5px solid rgba(52,211,153,0.35);  text-shadow: 0 0 20px rgba(52,211,153,0.4); }
 .badge.unknown { color: var(--unknown); background: var(--surface3); border: 1.5px solid var(--border2); }
 
 .confidenceRow { display: flex; align-items: center; gap: 16px; width: 100%; max-width: 260px; }
@@ -38,11 +37,9 @@
 .fill.unknown { background: var(--unknown); }
 .confidencePct { font-size: 20px; font-weight: 700; font-family: var(--mono); min-width: 48px; text-align: right; }
 
-/* ── Meta chips ── */
 .meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted); }
 .chip { background: var(--accent-glow); color: var(--accent); font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em; border: 1px solid rgba(124,127,245,0.2); }
 
-/* ── Module breakdown ── */
 .modulesLabel { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
 .modules { display: flex; flex-direction: column; gap: 6px; }
 
@@ -58,8 +55,19 @@
 }
 .moduleRow:hover { border-color: var(--border2); }
 
-.moduleIcon { font-size: 13px; width: 18px; text-align: center; flex-shrink: 0; }
-.moduleName { font-size: 12.5px; font-weight: 600; width: 44px; color: var(--text-dim); }
+.moduleKey {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-glow);
+  border: 1px solid rgba(124,127,245,0.2);
+  border-radius: 5px;
+  padding: 2px 7px;
+  flex-shrink: 0;
+}
+
 .moduleLabel { font-size: 11.5px; font-weight: 700; letter-spacing: 0.05em; }
 .moduleLabel.fake { color: var(--fake); }
 .moduleLabel.real { color: var(--real); }
@@ -70,12 +78,10 @@
 .moduleConf { font-size: 11.5px; color: var(--text-muted); font-family: var(--mono); min-width: 36px; text-align: right; }
 .moduleStub { font-size: 11.5px; color: var(--text-muted); font-style: italic; flex: 1; }
 
-/* ── Heatmap ── */
 .heatmap { display: flex; flex-direction: column; gap: 8px; }
 .sectionLabel { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
 .heatmapImg { max-width: 100%; border-radius: 10px; border: 1px solid var(--border2); display: block; }
 
-/* ── LIME ── */
 .lime { display: flex; flex-direction: column; gap: 10px; }
 .limeText { font-size: 14px; line-height: 2.2; }
 .limeWord { border-radius: 4px; padding: 1px 3px; transition: opacity 0.15s; }

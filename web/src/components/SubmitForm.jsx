@@ -51,19 +51,17 @@ export default function SubmitForm({ onResult, disabled }) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
-      {/* Text input */}
       <div className={styles.field}>
         <label className={styles.label}>Caption / Text</label>
         <textarea
           className={styles.textarea}
-          placeholder="Paste a social media caption here (Taglish or English)…"
+          placeholder="Paste a social media caption here (Taglish or English)"
           value={text}
           onChange={e => setText(e.target.value)}
           rows={4}
         />
       </div>
 
-      {/* Image drop zone */}
       <div className={styles.field}>
         <label className={styles.label}>Image</label>
         <div
@@ -77,13 +75,13 @@ export default function SubmitForm({ onResult, disabled }) {
             <div className={styles.previewWrap}>
               <img src={imagePreview} className={styles.preview} alt="preview" />
               <button type="button" className={styles.clearBtn} onClick={e => { e.stopPropagation(); clearImage() }}>
-                ✕ Remove
+                Remove
               </button>
             </div>
           ) : (
             <div className={styles.dropHint}>
-              <span className={styles.dropIcon}>↑</span>
-              <span>Drag & drop an image or <u>click to browse</u></span>
+              <span className={styles.dropIconText}>Upload</span>
+              <span>Drag and drop an image or <u>click to browse</u></span>
               <span className={styles.dropSub}>JPG, PNG, WEBP</span>
             </div>
           )}
@@ -100,12 +98,12 @@ export default function SubmitForm({ onResult, disabled }) {
       {error && <p className={styles.error}>{error}</p>}
 
       {disabled && (
-        <p className={styles.warning}>API is offline — start the server with <code>python main.py</code> in <code>api/</code></p>
+        <p className={styles.warning}>API is offline. Start the server with <code>python main.py</code> in <code>api/</code></p>
       )}
 
       <button type="submit" className={styles.submit} disabled={!canSubmit}>
         {loading ? <span className={styles.spinner} /> : null}
-        {loading ? 'Scanning…' : 'Scan for Disinformation'}
+        {loading ? 'Scanning...' : 'Scan for Disinformation'}
       </button>
     </form>
   )
