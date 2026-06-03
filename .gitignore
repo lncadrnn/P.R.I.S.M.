@@ -47,6 +47,10 @@ FakeNewsNet/
 fakenewsnet/
 *.csv.gz
 
+# Scratch / temp scripts 
+api/smoke_*.py 
+api/test_*.py
+
 # Node / JS
 node_modules/
 .npm/
