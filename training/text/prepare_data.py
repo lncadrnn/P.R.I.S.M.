@@ -113,7 +113,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--fnn-dir",
-        default=str(repo_root / "FakeNewsNet" / "dataset"),
+        default=str(repo_root / "data" / "FakeNewsNet" / "dataset"),
         help="Directory containing the four FakeNewsNet CSVs",
     )
     p.add_argument(

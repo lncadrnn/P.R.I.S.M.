@@ -30,8 +30,7 @@ coverage.xml
 .env.*
 !.env.example
 
-# Model weights and large binary artifacts
-models/
+# Model weights and large binary artifacts (directory is tracked; weights are not)
 *.pt
 *.pth
 *.bin
@@ -41,10 +40,10 @@ models/
 *.h5
 *.pkl
 
-# Datasets (document sources in README instead)
-data/
-FakeNewsNet/
-fakenewsnet/
+# Datasets (directory scaffold is tracked; actual data files are not)
+data/**
+!data/**/
+!data/**/.gitkeep
 *.csv.gz
 
 # Scratch / temp scripts
@@ -58,6 +57,12 @@ dist/
 .next/
 .nuxt/
 .parcel-cache/
+*.tsbuildinfo
+next-env.d.ts
+.pnp.*
+.yarn/
+coverage/
+.vercel
 
 # OS
 .DS_Store
