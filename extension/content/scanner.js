@@ -84,28 +84,34 @@
 
   const PLATFORM_CONFIG = {
     facebook: {
-      // Feed posts live inside div[role="feed"] as role="article"; the legacy
-      // FeedUnit pagelet is matched when present. The `excluded` ancestors
-      // below are the real defence against Messenger / sidebar / composer.
+      // Modern Facebook (Comet) does NOT wrap feed posts in role="article" —
+      // role="article" is used for Messenger chats and other chrome. The reliable
+      // marker of a real post is its CAPTION container, tagged with a Comet
+      // rendering attribute. We match those markers, then walk UP to the post
+      // card in processPost (resolveFacebookPost) to badge / extract / dedupe.
+      // Verified via the on-page selector probe.
       rootSelector: [
-        'div[role="feed"] div[role="article"]',
-        '[data-pagelet^="FeedUnit"]',
-      ].join(", "),
-      textSelectors: [
+        '[data-ad-rendering-role="story_message"]',
+        '[data-ad-comet-preview="message"]',
         '[data-ad-preview="message"]',
+        '[data-testid="post_message"]',
+      ].join(", "),
+      // Caption text is taken directly from the matched marker; these remain as
+      // a fallback for the resolved card.
+      textSelectors: [
+        '[data-ad-comet-preview="message"]',
         '[data-testid="post_message"]',
         'div[dir="auto"]',
       ],
       imageSelectors: ['img[src*="fbcdn.net"]'],
       excluded: [
-        '[role="complementary"]',              // right sidebar (ads, suggestions)
-        '[role="banner"]',                       // top nav
-        '[aria-label="Chats"]',                  // Messenger dock
-        '[data-pagelet="MercuryThreadlist"]',    // Messenger thread list
-        '[data-pagelet^="ChatTab"]',             // open chat tabs
-        '[aria-label="Stories"]',                // story rail
-        '[role="dialog"] [contenteditable]',     // composer dialog
-        'form[method="POST"]',                   // composer
+        '[role="complementary"]',                  // right sidebar (ads, contacts)
+        '[role="banner"]',                          // top nav bar
+        '[role="navigation"]',                      // left nav rail
+        '[aria-label="Chats" i]',                   // Messenger dock
+        '[data-pagelet="MercuryThreadlist"]',       // Messenger thread list
+        '[data-pagelet^="ChatTab"]',                // open chat tabs
+        '[role="dialog"][aria-label*="Create" i]',  // composer modal only
       ].join(", "),
     },
 
@@ -381,6 +387,41 @@
     return (wrapper && wrapper.nodeType === 1 && wrapper !== postEl) ? wrapper : postEl;
   }
 
+  // Markers that identify ONE post's caption on Facebook (Comet).
+  const FB_MARKER_SELECTOR =
+    '[data-ad-rendering-role="story_message"],[data-ad-comet-preview="message"],' +
+    '[data-ad-preview="message"],[data-testid="post_message"]';
+
+  /**
+   * Given a Facebook caption marker, walk UP to the surrounding post CARD — the
+   * element we badge, dedupe, and read media from. We climb until the parent
+   * holds MORE THAN ONE caption marker (i.e. it's the multi-post feed/column),
+   * or becomes the wide page wrapper / role="main" / body. The last single-post
+   * ancestor is the card.
+   *
+   * @param {Element} markerEl  The matched caption marker.
+   * @returns {Element}         The post card (or the marker itself as fallback).
+   */
+  function resolveFacebookPost(markerEl) {
+    let node = markerEl;
+    let best = markerEl;
+    for (let i = 0; i < 18 && node && node.parentElement; i++) {
+      const parent = node.parentElement;
+      let width = 0;
+      try { width = parent.getBoundingClientRect().width; } catch (_) { width = 0; }
+      let markerCount = 1;
+      try { markerCount = parent.querySelectorAll(FB_MARKER_SELECTOR).length; } catch (_) { markerCount = 1; }
+      const role = parent.getAttribute ? parent.getAttribute("role") : null;
+      if (markerCount > 1 || width > 900 || role === "main" || parent === document.body) {
+        best = node; // `node` is the largest ancestor containing just this post
+        break;
+      }
+      best = node;
+      node = parent;
+    }
+    return best || markerEl;
+  }
+
   // -------------------------------------------------------------------------
   // Dispatch
   // -------------------------------------------------------------------------
@@ -394,37 +435,51 @@
    * @param {Element} postEl  Post root element.
    */
   function processPost(postEl) {
-    if (!postEl || postEl.nodeType !== 1) return;
+    if (!postEl || postEl.nodeType !== 1) return "skip";
 
     // Never scan our own injected widgets.
-    if (postEl.hasAttribute && postEl.hasAttribute("data-prism-badge")) return;
+    if (postEl.hasAttribute && postEl.hasAttribute("data-prism-badge")) return "self";
 
-    // Already dispatched in this lifecycle.
-    if (postEl.dataset.prismScanned === "true") return;
+    // On Facebook the matched element is the post's CAPTION marker; resolve the
+    // surrounding post card (what we badge / dedupe / read media from). On other
+    // platforms the matched element IS the post.
+    let cardEl = postEl;
+    let captionText = null;
+    if (PLATFORM === "facebook") {
+      cardEl = resolveFacebookPost(postEl) || postEl;
+      captionText = ((postEl.innerText || postEl.textContent || "").replace(/\s+/g, " ")).trim();
+      // Skip comments/replies (different markup, but be safe).
+      if (cardEl.closest && cardEl.closest('[aria-label="Comment" i], [aria-label="Comments" i]')) {
+        return "comment";
+      }
+    }
+
+    // Already dispatched in this lifecycle (guard lives on the card).
+    if (cardEl.dataset.prismScanned === "true") return "already";
 
     // Disqualify candidates inside excluded regions (chat, sidebar, composer…).
-    if (config.excluded && postEl.closest && postEl.closest(config.excluded)) return;
+    if (config.excluded && cardEl.closest && cardEl.closest(config.excluded)) return "excluded";
 
-    const isVideo = isVideoPost(postEl);
-    const text = extractText(postEl);
+    const isVideo = isVideoPost(cardEl);
+    const text = (captionText != null && captionText.length) ? captionText : extractText(cardEl);
 
     // For video posts the poster frame is the media we forward; otherwise the
     // post's own images.
     let mediaUrls;
     if (isVideo) {
-      const poster = extractPosterUrl(postEl);
+      const poster = extractPosterUrl(cardEl);
       mediaUrls = poster ? [poster] : [];
     } else {
-      mediaUrls = extractImageUrls(postEl);
+      mediaUrls = extractImageUrls(cardEl);
     }
 
-    if (!hasScanableContent(text, mediaUrls)) return;
+    if (!hasScanableContent(text, mediaUrls)) return "empty";
 
-    // Content is read from postEl, but the badge anchors to the resolved
-    // element (the video player box on TikTok; postEl elsewhere). The id is
+    // The badge anchors to the resolved element (the video player box on
+    // TikTok; the post card on Facebook; the post element elsewhere). The id is
     // stamped on the anchor so main.js's verdict lookup renders in the right
     // place.
-    const anchorEl = resolveBadgeAnchor(postEl);
+    const anchorEl = (PLATFORM === "tiktok") ? resolveBadgeAnchor(cardEl) : cardEl;
     const postId = getOrAssignPostId(anchorEl, text, mediaUrls[0] || "");
 
     // Stash the caption where badge.js / sidebar.js read it (on the anchor,
@@ -440,7 +495,7 @@
     // Runtime gone (extension reloaded) → stop cleanly rather than throw.
     if (!runtimeAlive()) {
       stopScanner();
-      return;
+      return "dead";
     }
 
     // Paint the pending placeholder before we await anything.
@@ -457,8 +512,15 @@
       // Badge failures must never abort the scan dispatch.
     }
 
-    // Mark BEFORE sending so rapid observer fires don't double-dispatch.
-    postEl.dataset.prismScanned = "true";
+    // Mark BEFORE sending so rapid observer fires don't double-dispatch
+    // (guard lives on the card so multiple markers don't double-dispatch one post).
+    cardEl.dataset.prismScanned = "true";
+
+    if (DEV_MODE) {
+      // eslint-disable-next-line no-console
+      console.log("[PRISM] scanning " + PLATFORM + " post " + postId +
+        " (text:" + (text ? text.length : 0) + " media:" + mediaUrls.length + ")");
+    }
 
     let sendResult;
     try {
@@ -469,9 +531,9 @@
       });
     } catch (err) {
       // Synchronous throw → context invalidated.
-      postEl.dataset.prismScanned = "false";
+      cardEl.dataset.prismScanned = "false";
       stopScanner();
-      return;
+      return "dead";
     }
 
     // sendMessage returns a Promise in MV3; reset the guard on failure.
@@ -482,9 +544,100 @@
           stopScanner();
           return;
         }
-        postEl.dataset.prismScanned = "false";
+        cardEl.dataset.prismScanned = "false";
       });
     }
+    return "dispatched";
+  }
+
+  // -------------------------------------------------------------------------
+  // Debounced full rescan — the resilient catch-all.
+  //
+  // The MutationObserver only sees NEWLY-ADDED article nodes, but Facebook (and
+  // others) render an empty post shell first and fill in text/media LAZILY. By
+  // the time the content arrives the shell was already seen-and-skipped, and the
+  // fill adds child nodes (not articles) so the post is never retried. A
+  // debounced sweep of ALL current candidates fixes this: processPost is
+  // idempotent (skips already-scanned), and a post that was "empty" earlier gets
+  // picked up once its content loads.
+  // -------------------------------------------------------------------------
+
+  let rescanTimer = null;
+  let fbProbeRuns = 0; // limit probe logging to a few runs while stuck
+
+  /** Run the FB selector probe a few times so the output is easy to capture. */
+  function maybeProbe() {
+    if (PLATFORM !== "facebook" || fbProbeRuns >= 3) return;
+    fbProbeRuns++;
+    try { probeFacebook(); }
+    catch (e) { /* eslint-disable-next-line no-console */ console.log("[PRISM] probe error: " + (e && e.message)); }
+  }
+
+  /**
+   * DEV: probe a battery of candidate selectors and report, for each, how many
+   * elements match and the longest text sample among them. Reveals which
+   * selector actually captures Facebook's real posts (high count + real text)
+   * vs. empty decoy articles — so we can fix the rootSelector precisely.
+   */
+  function probeFacebook() {
+    const SELECTORS = [
+      'div[role="feed"]',
+      'div[role="feed"] > div',
+      'div[role="feed"] > div > div',
+      'div[role="article"]',
+      'div[role="main"]',
+      'div[role="main"] [aria-posinset]',
+      '[aria-posinset]',
+      '[data-pagelet^="FeedUnit"]',
+      '[data-pagelet]',
+      'div[data-ad-comet-preview="message"]',
+      '[data-ad-preview="message"]',
+      '[data-ad-rendering-role="story_message"]',
+    ];
+    const report = {};
+    for (let i = 0; i < SELECTORS.length; i++) {
+      const sel = SELECTORS[i];
+      let nodes = [];
+      try { nodes = document.querySelectorAll(sel); } catch (_) { continue; }
+      let best = "";
+      for (let j = 0; j < nodes.length && j < 30; j++) {
+        const t = ((nodes[j].innerText || nodes[j].textContent || "").replace(/\s+/g, " ")).trim();
+        if (t.length > best.length) best = t;
+      }
+      report[sel] = { count: nodes.length, sample: best.slice(0, 70) };
+    }
+    // eslint-disable-next-line no-console
+    console.log("[PRISM] FB selector probe:\n" + JSON.stringify(report, null, 2));
+  }
+
+  function rescanAll() {
+    if (!runtimeAlive()) { stopScanner(); return; }
+    const posts = findAllPosts();
+    if (!DEV_MODE) {
+      for (let i = 0; i < posts.length; i++) processPost(posts[i]);
+      return;
+    }
+    const tally = {};
+    for (let i = 0; i < posts.length; i++) {
+      const r = processPost(posts[i]) || "skip";
+      tally[r] = (tally[r] || 0) + 1;
+    }
+    // Log only when something actionable happened (avoid spam when everything
+    // is already scanned). Surfaces WHY posts are skipped if badges never show.
+    if (tally.dispatched || tally.excluded || tally.nested || tally.empty || tally.comment) {
+      // JSON.stringify so the data survives copy/paste (console shows bare
+      // objects as "Object" when copied as text).
+      // eslint-disable-next-line no-console
+      console.log("[PRISM] rescan " + PLATFORM + ": " + posts.length + " candidates → " + JSON.stringify(tally));
+    }
+    // If we matched candidates but dispatched no real post, probe selectors
+    // (a few times) so we can see which selector actually captures the posts.
+    if (!tally.dispatched) maybeProbe();
+  }
+
+  function scheduleRescan() {
+    clearTimeout(rescanTimer);
+    rescanTimer = setTimeout(rescanAll, 400);
   }
 
   // -------------------------------------------------------------------------
@@ -621,6 +774,12 @@
       return;
     }
 
+    // FB/X: any DOM change may have added a post OR filled an existing shell
+    // with its lazy content. A debounced full rescan handles both robustly;
+    // the targeted pass below still gives an immediate scan for cleanly-added
+    // post nodes so freshly-rendered posts badge without waiting the debounce.
+    scheduleRescan();
+
     for (let m = 0; m < mutations.length; m++) {
       const added = mutations[m].addedNodes;
       for (let n = 0; n < added.length; n++) {
@@ -662,15 +821,30 @@
       // ttInit registers candidates; the IO callback drives the first scan.
     } else {
       const initial = findAllPosts();
-      if (DEV_MODE && initial.length === 0) {
+      if (DEV_MODE) {
         // eslint-disable-next-line no-console
-        console.warn(
-          '[PRISM] 0 initial posts on "' + PLATFORM + '" — selectors may be ' +
-            'stale (rootSelector="' + config.rootSelector + '"). The ' +
-            "MutationObserver will still pick up posts as they render."
+        console.log(
+          '[PRISM] init on "' + PLATFORM + '": ' + initial.length +
+            ' candidate post(s) (rootSelector="' + config.rootSelector + '"). ' +
+            "The MutationObserver will pick up more as they render."
         );
       }
       for (let i = 0; i < initial.length; i++) processPost(initial[i]);
+
+      // Posts whose content loads shortly AFTER document_idle won't trigger a
+      // useful mutation (the shell already exists). A couple of delayed sweeps
+      // catch them, and a scroll listener catches posts that fill as they near
+      // the viewport.
+      setTimeout(rescanAll, 1200);
+      setTimeout(rescanAll, 3000);
+      window.addEventListener("scroll", scheduleRescan, true);
+
+      // DEV: run the selector probe after the feed has had time to render, so
+      // we diagnose against a populated DOM (not the initial empty shell).
+      if (DEV_MODE && PLATFORM === "facebook") {
+        setTimeout(maybeProbe, 3500);
+        setTimeout(maybeProbe, 7000);
+      }
     }
 
     observer = new MutationObserver(onMutation);
@@ -683,6 +857,9 @@
       observer.disconnect();
       observer = null;
     }
+    clearTimeout(rescanTimer);
+    rescanTimer = null;
+    try { window.removeEventListener("scroll", scheduleRescan, true); } catch (_) { /* ignore */ }
     if (PLATFORM === "tiktok") ttTeardown();
   }
 

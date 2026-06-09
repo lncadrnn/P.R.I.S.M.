@@ -394,9 +394,17 @@
     const panel = root.querySelector(".prism-sb-panel");
     if (!panel) return;
 
+    // Resolve the logo only when the runtime is alive. After the extension is
+    // reloaded the old injected script lives on with a dead context, and
+    // getURL() then returns "chrome-extension://invalid/" — loading that as an
+    // <img> spams net::ERR_FAILED. Guard on chrome.runtime.id and reject any
+    // "invalid" URL so we fall back to the plain logo box instead.
     let logoUrl = "";
     try {
-      logoUrl = chrome.runtime.getURL("icons/icon128.png");
+      if (chrome && chrome.runtime && chrome.runtime.id) {
+        const u = chrome.runtime.getURL("icons/icon128.png");
+        if (u && u.indexOf("chrome-extension://invalid") === -1) logoUrl = u;
+      }
     } catch (_) { /* getURL unavailable in some test contexts */ }
 
     const headerHtml =
