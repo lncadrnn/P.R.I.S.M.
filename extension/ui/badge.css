@@ -49,6 +49,11 @@
   right: 76px;
 }
 
+/* Threads: clear the post's single ⋯ (more) button in the top-right corner. */
+.prism-badge.prism-badge--threads {
+  right: 44px;
+}
+
 .prism-badge {
 
   /* Layout of the merged pill. */

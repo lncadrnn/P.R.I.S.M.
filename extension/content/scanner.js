@@ -44,6 +44,7 @@
 
   const PLATFORM = (function () {
     const host = location.hostname;
+    if (host.indexOf("threads.net") !== -1 || host.indexOf("threads.com") !== -1) return "threads";
     if (host.indexOf("facebook.com") !== -1) return "facebook";
     if (host.indexOf("tiktok.com") !== -1) return "tiktok";
     if (host.indexOf("twitter.com") !== -1 || host.indexOf("x.com") !== -1) return "twitter";
@@ -150,6 +151,35 @@
       excluded: [
         '[data-testid="sidebarColumn"]',         // right sidebar
         '[aria-label="Timeline: Trending now"]',
+      ].join(", "),
+    },
+
+    threads: {
+      // Threads (Meta, Instagram-built) is a text-first scroll feed much like
+      // X/Twitter. Each feed post is wrapped in a `data-pressable-container`
+      // (the clickable post box). Reposts/quoted posts nest a second pressable
+      // container, so processPost skips nested ones (badges only the outer post).
+      // Threads markup is heavily obfuscated; we lean on this stable data-attr
+      // plus role="article" as a fallback, then the longest-text caption walk.
+      rootSelector: [
+        'div[data-pressable-container="true"]',
+        'div[role="article"]',
+      ].join(", "),
+      textSelectors: [
+        'div[data-pressable-container="true"] span[dir="auto"]',
+        'span[dir="auto"]',
+        'div[dir="auto"]',
+      ],
+      // Threads media is served from the Instagram / fbcdn CDNs.
+      imageSelectors: [
+        'img[src*="cdninstagram"]',
+        'img[src*="fbcdn.net"]',
+      ],
+      excluded: [
+        '[role="banner"]',                          // top bar
+        '[role="navigation"]',                      // nav rail / tab bar
+        '[aria-label*="Search" i]',                 // search column
+        '[role="dialog"]',                          // composer / overlays
       ].join(", "),
     },
 
@@ -462,6 +492,14 @@
       // Skip comments/replies (different markup, but be safe).
       if (cardEl.closest && cardEl.closest('[aria-label="Comment" i], [aria-label="Comments" i]')) {
         return "comment";
+      }
+    } else if (PLATFORM === "threads") {
+      // A reposted / quoted Threads post nests its OWN pressable container inside
+      // the outer feed post. Badge only the outermost: skip any candidate whose
+      // parent already lives inside another pressable container.
+      if (postEl.parentElement && postEl.parentElement.closest &&
+          postEl.parentElement.closest('div[data-pressable-container="true"]')) {
+        return "nested";
       }
     }
 

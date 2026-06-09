@@ -52,6 +52,15 @@
     catch (_) { return false; }
   })();
 
+  // Threads posts have a single ⋯ (more) button in the top-right corner. We
+  // shift the badge left of it (via the .prism-badge--threads class).
+  const IS_THREADS = (function () {
+    try {
+      const h = location.hostname;
+      return h.indexOf("threads.net") !== -1 || h.indexOf("threads.com") !== -1;
+    } catch (_) { return false; }
+  })();
+
   // -------------------------------------------------------------------------
   // DOM helpers
   // -------------------------------------------------------------------------
@@ -90,7 +99,10 @@
    */
   function makeRoot() {
     const root = document.createElement("div");
-    root.className = IS_FACEBOOK ? "prism-badge prism-badge--fb" : "prism-badge";
+    let cls = "prism-badge";
+    if (IS_FACEBOOK) cls += " prism-badge--fb";
+    else if (IS_THREADS) cls += " prism-badge--threads";
+    root.className = cls;
     root.setAttribute(BADGE_ATTR, "true");
     root.setAttribute("role", "button");
     root.setAttribute("tabindex", "0");

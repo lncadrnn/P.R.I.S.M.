@@ -100,7 +100,7 @@
   // scans. A genuine feed swap (feed → profile → feed) always changes the
   // path. The TikTok scanner additionally handles in-place video changes via
   // its own IntersectionObserver, so a path change is the right trigger here
-  // for all three platforms.
+  // for all supported platforms.
   // -------------------------------------------------------------------------
 
   let currentPath = location.pathname;

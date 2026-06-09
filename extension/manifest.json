@@ -3,7 +3,7 @@
   "name": "PRISM — Multimodal Disinformation Shield",
   "short_name": "PRISM",
   "version": "1.0.0",
-  "description": "Passively scans Facebook, TikTok, and X posts for disinformation (Real/Fake) and AI-generated media (AI/Human) using the PRISM multimodal forensic system.",
+  "description": "Passively scans Facebook, TikTok, X, and Threads posts for disinformation (Real/Fake) and AI-generated media (AI/Human) using the PRISM multimodal forensic system.",
 
   "permissions": [
     "activeTab",
@@ -16,7 +16,11 @@
     "https://web.facebook.com/*",
     "https://www.tiktok.com/*",
     "https://twitter.com/*",
-    "https://x.com/*"
+    "https://x.com/*",
+    "https://www.threads.net/*",
+    "https://threads.net/*",
+    "https://www.threads.com/*",
+    "https://threads.com/*"
   ],
 
   "background": {
@@ -31,7 +35,11 @@
         "https://web.facebook.com/*",
         "https://www.tiktok.com/*",
         "https://twitter.com/*",
-        "https://x.com/*"
+        "https://x.com/*",
+        "https://www.threads.net/*",
+        "https://threads.net/*",
+        "https://www.threads.com/*",
+        "https://threads.com/*"
       ],
       "js": [
         "lib/verdict.js",
@@ -75,7 +83,11 @@
         "https://web.facebook.com/*",
         "https://www.tiktok.com/*",
         "https://twitter.com/*",
-        "https://x.com/*"
+        "https://x.com/*",
+        "https://www.threads.net/*",
+        "https://threads.net/*",
+        "https://www.threads.com/*",
+        "https://threads.com/*"
       ]
     }
   ]
