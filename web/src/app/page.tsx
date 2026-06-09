@@ -755,7 +755,7 @@ export default function PrismLanding() {
         <div className="relative z-10 w-full max-w-[95%] xl:max-w-[98%] mx-auto flex flex-col items-center text-center justify-center flex-1 min-h-0">
           
           {/* Node Tree Layout (Imitating user screenshot) */}
-          <div className="relative w-full max-w-[95%] xl:max-w-[98%] h-[280px] sm:h-[280px] md:h-[320px] lg:h-[350px] xl:h-[380px] mx-auto overflow-visible mb-3 md:mb-5 flex items-center justify-center flex-shrink min-h-0">
+          <div className="relative w-full max-w-[95%] xl:max-w-[98%] h-[340px] sm:h-[340px] md:h-[320px] lg:h-[350px] xl:h-[380px] mx-auto overflow-visible mb-3 md:mb-5 flex items-center justify-center flex-shrink min-h-0">
             
             {/* Desktop Branching Connector Lines */}
             <div className="absolute inset-0 pointer-events-none hidden md:block z-0">
