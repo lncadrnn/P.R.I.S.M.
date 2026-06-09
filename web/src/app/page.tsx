@@ -755,7 +755,7 @@ export default function PrismLanding() {
         <div className="relative z-10 w-full max-w-[95%] xl:max-w-[98%] mx-auto flex flex-col items-center text-center justify-center flex-1 min-h-0">
           
           {/* Node Tree Layout (Imitating user screenshot) */}
-          <div className="relative w-full max-w-[95%] xl:max-w-[98%] h-[250px] sm:h-[280px] md:h-[320px] lg:h-[350px] xl:h-[380px] mx-auto overflow-visible mb-3 md:mb-5 flex items-center justify-center flex-shrink min-h-0">
+          <div className="relative w-full max-w-[95%] xl:max-w-[98%] h-[280px] sm:h-[280px] md:h-[320px] lg:h-[350px] xl:h-[380px] mx-auto overflow-visible mb-3 md:mb-5 flex items-center justify-center flex-shrink min-h-0">
             
             {/* Desktop Branching Connector Lines */}
             <div className="absolute inset-0 pointer-events-none hidden md:block z-0">
@@ -845,46 +845,46 @@ export default function PrismLanding() {
             <div className="md:hidden absolute inset-0 z-10 pointer-events-auto">
               {/* Mobile Branching Connector Lines */}
               <div className="absolute inset-0 pointer-events-none z-0">
-                <svg viewBox="0 0 1000 360" className="w-full h-full stroke-slate-200/70 dark:stroke-slate-800/70 stroke-[1] fill-none" preserveAspectRatio="none">
+                <svg viewBox="0 0 1000 360" className="w-full h-full stroke-slate-200/70 dark:stroke-slate-800/70 stroke-[1.2] fill-none" preserveAspectRatio="none">
                   {/* Horizontal Main Axis */}
-                  <line x1="80" y1="180" x2="940" y2="180" />
+                  <line x1="45" y1="180" x2="955" y2="180" />
                   
                   {/* Diagonal Left Branches */}
-                  <line x1="330" y1="180" x2="190" y2="70" />
-                  <line x1="360" y1="180" x2="230" y2="290" />
+                  <line x1="330" y1="180" x2="170" y2="70" />
+                  <line x1="360" y1="180" x2="210" y2="290" />
                   
                   {/* Diagonal Right Branches */}
-                  <line x1="670" y1="180" x2="770" y2="70" />
-                  <line x1="640" y1="180" x2="790" y2="290" />
+                  <line x1="670" y1="180" x2="790" y2="70" />
+                  <line x1="640" y1="180" x2="820" y2="290" />
 
                   {/* Branching connection node points */}
-                  <circle cx="190" cy="70" r="3.5" className="fill-[#0077BE]" />
-                  <circle cx="230" cy="290" r="3.5" className="fill-[#3CC4DB]" />
-                  <circle cx="770" cy="70" r="3.5" className="fill-[#0077BE]" />
-                  <circle cx="790" cy="290" r="3.5" className="fill-[#3CC4DB]" />
+                  <circle cx="170" cy="70" r="4" className="fill-[#0077BE]" />
+                  <circle cx="210" cy="290" r="4" className="fill-[#3CC4DB]" />
+                  <circle cx="790" cy="70" r="4" className="fill-[#0077BE]" />
+                  <circle cx="820" cy="290" r="4" className="fill-[#3CC4DB]" />
                 </svg>
               </div>
 
               {/* Far Left Avatar: Target Scan */}
-              <div className="absolute w-11 h-11 rounded-xl border-2 border-white dark:border-slate-800 shadow-md overflow-hidden left-[1.5%] top-[50%] -translate-y-1/2 group">
+              <div className="absolute w-[56px] h-[56px] rounded-2xl border-2 border-white dark:border-slate-800 shadow-md overflow-hidden left-[0.5%] top-[50%] -translate-y-1/2 group">
                 <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover filter saturate-75 contrast-125" alt="PRISM Target Scan" />
                 <div className="absolute inset-0 bg-[#3CC4DB]/15 border border-[#3CC4DB]/40 animate-pulse" />
               </div>
 
               {/* Top Left Badge: GAN Identifier */}
-              <div className="absolute w-9 h-9 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/35 dark:to-amber-900/35 border border-amber-200 dark:border-amber-900/40 shadow-[0_4px_12px_rgba(245,158,11,0.1)] dark:shadow-none rounded-xl flex flex-col items-center justify-center left-[14%] top-[10%] -translate-y-1/2 cursor-pointer group">
-                <Cpu className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
-                <span className="text-[5px] font-mono font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider mt-0.5">GAN Scan</span>
+              <div className="absolute w-[48px] h-[48px] bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/35 dark:to-amber-900/35 border border-amber-200 dark:border-amber-900/40 shadow-[0_4px_12px_rgba(245,158,11,0.1)] dark:shadow-none rounded-2xl flex flex-col items-center justify-center left-[12%] top-[10%] -translate-y-1/2 cursor-pointer group">
+                <Cpu className="w-5 h-5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+                <span className="text-[7px] font-mono font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider mt-0.5">GAN Scan</span>
               </div>
 
               {/* Bottom Left Badge: Diffusion Engine */}
-              <div className="absolute w-9 h-9 bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-950/35 dark:to-cyan-900/35 border border-cyan-200 dark:border-cyan-900/40 shadow-[0_4px_12px_rgba(6,182,212,0.1)] dark:shadow-none rounded-xl flex flex-col items-center justify-center left-[18%] bottom-[10%] translate-y-1/2 cursor-pointer group">
-                <Layers className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform" />
-                <span className="text-[5px] font-mono font-bold text-cyan-800 dark:text-cyan-300 uppercase tracking-wider mt-0.5">Diffusion</span>
+              <div className="absolute w-[48px] h-[48px] bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-950/35 dark:to-cyan-900/35 border border-cyan-200 dark:border-cyan-900/40 shadow-[0_4px_12px_rgba(6,182,212,0.1)] dark:shadow-none rounded-2xl flex flex-col items-center justify-center left-[16%] bottom-[10%] translate-y-1/2 cursor-pointer group">
+                <Layers className="w-5 h-5 text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform" />
+                <span className="text-[7px] font-mono font-bold text-cyan-800 dark:text-cyan-300 uppercase tracking-wider mt-0.5">Diffusion</span>
               </div>
 
               {/* Center Logo Container */}
-              <div className="absolute w-24 h-24 left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer">
+              <div className="absolute w-[110px] h-[110px] left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer">
                 <svg viewBox="0 0 200 200" className="w-[90%] h-[90%] fill-none">
                   <circle cx="100" cy="100" r="85" stroke="#3CC4DB" strokeWidth="2" strokeDasharray="60 30 10 5" className="opacity-80 rotate-[35deg] origin-center" />
                   <circle cx="100" cy="100" r="75" stroke="#0077BE" strokeWidth="1" strokeDasharray="40 20" className="opacity-60 -rotate-[15deg] origin-center" />
@@ -902,21 +902,21 @@ export default function PrismLanding() {
               </div>
 
               {/* Top Right Badge: Synthetic Sentry */}
-              <div className="absolute w-9 h-9 bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-950/35 dark:to-rose-900/35 border border-rose-200 dark:border-rose-900/40 shadow-[0_4px_12px_rgba(244,63,94,0.1)] dark:shadow-none rounded-xl flex flex-col items-center justify-center right-[18%] top-[10%] -translate-y-1/2 cursor-pointer group">
-                <Shield className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform" />
-                <span className="text-[5px] font-mono font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider mt-0.5">Sentry</span>
+              <div className="absolute w-[48px] h-[48px] bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-950/35 dark:to-rose-900/35 border border-rose-200 dark:border-rose-900/40 shadow-[0_4px_12px_rgba(244,63,94,0.1)] dark:shadow-none rounded-2xl flex flex-col items-center justify-center right-[16%] top-[10%] -translate-y-1/2 cursor-pointer group">
+                <Shield className="w-5 h-5 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform" />
+                <span className="text-[7px] font-mono font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider mt-0.5">Sentry</span>
               </div>
 
               {/* Bottom Right Avatar: Target Scan */}
-              <div className="absolute w-11 h-11 rounded-xl border-2 border-white dark:border-slate-800 shadow-md overflow-hidden right-[14%] bottom-[10%] translate-y-1/2 group">
+              <div className="absolute w-[56px] h-[56px] rounded-2xl border-2 border-white dark:border-slate-800 shadow-md overflow-hidden right-[12%] bottom-[10%] translate-y-1/2 group">
                 <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover filter saturate-75 contrast-125" alt="PRISM Target Scan" />
                 <div className="absolute inset-0 bg-[#0077BE]/15 border border-[#0077BE]/40 animate-pulse" />
               </div>
 
               {/* Far Right Badge: Tracker */}
-              <div className="absolute w-9 h-9 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-[0_4px_12px_rgba(0,0,0,0.03)] dark:shadow-none rounded-xl flex flex-col items-center justify-center right-[1.5%] top-[50%] -translate-y-1/2 cursor-pointer group">
-                <Eye className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300 group-hover:scale-110 transition-transform" />
-                <span className="text-[5px] font-mono font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mt-0.5">Tracker</span>
+              <div className="absolute w-[48px] h-[48px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-[0_4px_12px_rgba(0,0,0,0.03)] dark:shadow-none rounded-2xl flex flex-col items-center justify-center right-[0.5%] top-[50%] -translate-y-1/2 cursor-pointer group">
+                <Eye className="w-5 h-5 text-slate-700 dark:text-slate-300 group-hover:scale-110 transition-transform" />
+                <span className="text-[7px] font-mono font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mt-0.5">Tracker</span>
               </div>
             </div>
  
