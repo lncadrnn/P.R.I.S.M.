@@ -509,7 +509,7 @@ export default function PrismLanding() {
       {/* 1. HEADER & NAVIGATION (Editorial & Sleek Morphing Pill Header) */}
       <header className={`sticky top-3 md:top-6 z-50 w-[92%] max-w-5xl bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 mx-auto mt-3 md:mt-6 mb-4 md:mb-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col items-center ${isMobileMenuOpen ? 'rounded-[2rem] py-4 px-6' : 'rounded-full py-2 md:py-2.5 px-4 md:px-8'}`}>
         <div className="flex justify-between items-center w-full">
-          <div className="flex items-center gap-3">
+          <div className="flex md:flex-1 items-center gap-3">
             {/* Flat Minimalist PRISM Emblem */}
             <div className="w-9 h-9 flex items-center justify-center">
               <svg viewBox="0 0 100 100" className="w-full h-full fill-none stroke-2">
@@ -524,12 +524,12 @@ export default function PrismLanding() {
             </div>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600 dark:text-slate-400">
+          <nav className="hidden md:flex md:flex-1 justify-center items-center gap-5 lg:gap-8 text-sm font-semibold text-slate-600 dark:text-slate-400">
             <motion.a 
               href="#solutions" 
               whileHover={{ scale: 1.03, y: -0.5 }}
               whileTap={{ scale: 0.95 }}
-              className="hover:text-slate-900 dark:hover:text-slate-50 transition-colors cursor-pointer"
+              className="hover:text-slate-900 dark:hover:text-slate-50 transition-colors cursor-pointer whitespace-nowrap"
             >
               Synthetic Gallery
             </motion.a>
@@ -537,7 +537,7 @@ export default function PrismLanding() {
               href="#bento" 
               whileHover={{ scale: 1.03, y: -0.5 }}
               whileTap={{ scale: 0.95 }}
-              className="hover:text-slate-900 dark:hover:text-slate-50 transition-colors cursor-pointer"
+              className="hover:text-slate-900 dark:hover:text-slate-50 transition-colors cursor-pointer whitespace-nowrap"
             >
               How It Works
             </motion.a>
@@ -545,32 +545,21 @@ export default function PrismLanding() {
               href="#extension" 
               whileHover={{ scale: 1.03, y: -0.5 }}
               whileTap={{ scale: 0.95 }}
-              className="hover:text-slate-900 dark:hover:text-slate-50 transition-colors cursor-pointer"
+              className="hover:text-slate-900 dark:hover:text-slate-50 transition-colors cursor-pointer whitespace-nowrap"
             >
-              Chrome Extension
+              Extension
             </motion.a>
             <motion.a 
               href="#publications" 
               whileHover={{ scale: 1.03, y: -0.5 }}
               whileTap={{ scale: 0.95 }}
-              className="hover:text-slate-900 dark:hover:text-slate-50 transition-colors cursor-pointer"
+              className="hover:text-slate-900 dark:hover:text-slate-50 transition-colors cursor-pointer whitespace-nowrap"
             >
               Research
             </motion.a>
           </nav>
 
-          <div className="hidden md:flex items-center gap-3">
-            <motion.a 
-              href="#extension" 
-              whileHover={{ scale: 1.03, y: -0.5 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              className="flex items-center gap-2 px-5 py-2 bg-slate-950 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-[#FDFBF7] dark:text-slate-950 text-sm font-bold rounded-full shadow-sm transition-colors cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              <span>Install Extension</span>
-            </motion.a>
-
+          <div className="hidden md:flex md:flex-1 justify-end items-center gap-3">
             <button
               onClick={toggleDarkMode}
               className="p-2 bg-[#F4F1EA] dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-all text-slate-800 dark:text-slate-200 cursor-pointer"
@@ -578,6 +567,17 @@ export default function PrismLanding() {
             >
               {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
+
+            <motion.a 
+              href="#extension" 
+              whileHover={{ scale: 1.03, y: -0.5 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-950 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-[#FDFBF7] dark:text-slate-950 text-sm font-bold rounded-full shadow-sm transition-colors cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              <span>Install Extension</span>
+            </motion.a>
           </div>
 
           {/* Mobile hamburger menu toggle button */}
@@ -630,7 +630,7 @@ export default function PrismLanding() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors py-2 px-3 hover:bg-slate-100/60 dark:hover:bg-slate-900/60 rounded-xl"
                 >
-                  Chrome Extension
+                  Extension
                 </a>
                 <a 
                   href="#publications" 
