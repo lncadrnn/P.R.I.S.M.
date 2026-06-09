@@ -14,7 +14,6 @@ import {
   AlertTriangle, 
   Clock, 
   Sliders, 
-  Flame,
   Search,
   Eye,
   RefreshCw,
@@ -38,6 +37,42 @@ interface SolutionCard {
   telemetry: string[];
 }
 
+interface DemoResult {
+  verdict: string;
+  confidence: number;
+  metrics: {
+    type: string;
+    latency: string;
+    anomaly?: string;
+    url?: string;
+    camRegion?: { top: string; left: string; width: string; height: string };
+    details?: string[];
+    jitterFrames?: number[];
+    syncGap?: string;
+    taglishBert?: string;
+    limeHighlight?: { text: string; flag: boolean }[];
+    domainReputation?: string;
+    integrity?: string;
+  };
+}
+
+interface PhotoSample {
+  id: number;
+  name: string;
+  url: string;
+  anomaly: string;
+  confidence: number;
+  camRegion: { top: string; left: string; width: string; height: string };
+}
+
+interface VideoSample {
+  id: number;
+  name: string;
+  anomaly: string;
+  confidence: number;
+  latency: string;
+}
+
 export default function PrismLanding() {
   const containerRef = useRef<HTMLDivElement>(null);
   const solutionsRef = useRef<HTMLDivElement>(null);
@@ -45,12 +80,12 @@ export default function PrismLanding() {
   const [clockInference, setClockInference] = useState(0);
   const [selectedExtensionTab, setSelectedExtensionTab] = useState("passive");
   const [demoText, setDemoText] = useState("Grabe, check this out! AI-generated image daw ito ni President na ginawa sa AI app kahapon. Totoo ba ito?");
-  const [demoResult, setDemoResult] = useState<any>(null);
+  const [demoResult, setDemoResult] = useState<DemoResult | null>(null);
   const [demoLoading, setDemoLoading] = useState(false);
 
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<"text" | "photo" | "video" | "url">("text");
-  const [selectedPhotoSample, setSelectedPhotoSample] = useState<any>(null);
-  const [selectedVideoSample, setSelectedVideoSample] = useState<any>(null);
+  const [selectedPhotoSample, setSelectedPhotoSample] = useState<PhotoSample | null>(null);
+  const [selectedVideoSample, setSelectedVideoSample] = useState<VideoSample | null>(null);
   const [demoUrl, setDemoUrl] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -215,10 +250,6 @@ export default function PrismLanding() {
   }, []);
 
   // Track scroll for Convergence Grid & Lens Focus Footer
-  const { scrollYProgress: mainScrollProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
 
   const { scrollYProgress: solutionsScrollProgress } = useScroll({
     target: solutionsRef,
@@ -299,12 +330,6 @@ export default function PrismLanding() {
   const footerOpacity = useTransform(smoothFooterProgress, [0.1, 0.95], [0.4, 1]);
 
   // Data arrays
-  const badges = [
-    { text: "GAN Identifier", delay: 0 },
-    { text: "Diffusion Engine", delay: 0.4 },
-    { text: "Synthetic Sentry", delay: 0.8 },
-    { text: "Temporal Tracker", delay: 1.2 }
-  ];
 
   const solutionCards: SolutionCard[] = [
     {
@@ -1088,7 +1113,7 @@ export default function PrismLanding() {
                       key={tab.id}
                       type="button"
                       onClick={() => {
-                        setActiveWorkspaceTab(tab.id as any);
+                        setActiveWorkspaceTab(tab.id as "text" | "photo" | "video" | "url");
                         setDemoResult(null);
                       }}
                       className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
@@ -1302,7 +1327,7 @@ export default function PrismLanding() {
                               LIME Text Highlighting (Explainable Reason Parser)
                             </h4>
                             <div className="p-4 bg-white rounded-2xl border border-slate-200/80 font-medium text-slate-800 leading-relaxed text-sm max-h-[200px] overflow-y-auto">
-                              {demoResult.metrics.limeHighlight.map((word: any, i: number) => (
+                              {demoResult.metrics.limeHighlight?.map((word, i) => (
                                 <span 
                                   key={i} 
                                   className={word.flag ? "bg-[#DC143C]/20 text-[#DC143C] font-semibold border-b border-[#DC143C] px-1 rounded-sm shadow-sm" : ""}
@@ -1322,7 +1347,7 @@ export default function PrismLanding() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
                           {/* Visual CAM Heatmap Overlay */}
                           <div className="relative aspect-square w-full bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner group">
-                            <img src={demoResult.metrics.url} className="w-full h-full object-cover" alt="Scanned Target" />
+                            <img src={demoResult.metrics.url || undefined} className="w-full h-full object-cover" alt="Scanned Target" />
                             
                             {/* Laser scanner effect */}
                             <div className="absolute inset-x-0 h-0.5 bg-[#3CC4DB] shadow-[0_0_12px_rgba(60,196,219,0.8)] animate-bounce z-20" style={{ top: "35%", animationDuration: "3s" }} />
@@ -1330,10 +1355,10 @@ export default function PrismLanding() {
                             {/* Bounding box around anomaly */}
                             <div 
                               style={{
-                                top: demoResult.metrics.camRegion.top,
-                                left: demoResult.metrics.camRegion.left,
-                                width: demoResult.metrics.camRegion.width,
-                                height: demoResult.metrics.camRegion.height,
+                                top: demoResult.metrics.camRegion?.top,
+                                left: demoResult.metrics.camRegion?.left,
+                                width: demoResult.metrics.camRegion?.width,
+                                height: demoResult.metrics.camRegion?.height,
                               }}
                               className="absolute border-2 border-dashed border-[#DC143C] z-10 rounded-full bg-radial from-[#DC143C]/40 via-transparent to-transparent animate-pulse"
                             />
@@ -1417,7 +1442,7 @@ export default function PrismLanding() {
                           <div className="p-4 bg-white rounded-2xl border border-slate-200/60 grid grid-cols-3 gap-2 text-center shadow-sm">
                             <div>
                               <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest block">Domain Rep</span>
-                              <span className={`text-[10px] font-bold block mt-1 ${demoResult.metrics.integrity === "PASSED" ? "text-green-600" : "text-[#DC143C]"}`}>{demoResult.metrics.domainReputation.split(" ")[0]}</span>
+                              <span className={`text-[10px] font-bold block mt-1 ${demoResult.metrics.integrity === "PASSED" ? "text-green-600" : "text-[#DC143C]"}`}>{demoResult.metrics.domainReputation?.split(" ")[0]}</span>
                             </div>
                             <div>
                               <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest block">Integrity Checks</span>
@@ -1434,7 +1459,7 @@ export default function PrismLanding() {
                               Late-Fusion Metadata Auditing
                             </h4>
                             <div className="p-3 bg-slate-950 text-slate-300 font-mono text-[9px] rounded-2xl border border-slate-800 space-y-1 max-h-[120px] overflow-y-auto">
-                              {demoResult.metrics.details.map((item: string, idx: number) => (
+                              {demoResult.metrics.details?.map((item: string, idx: number) => (
                                 <div key={idx} className="flex gap-2">
                                   <span className="text-slate-500">&gt;</span>
                                   <span>{item}</span>
@@ -1557,7 +1582,7 @@ export default function PrismLanding() {
                 <p>Hover over flagged posts to expand our explainability Head-Up Display (HUD). Check the LIME highlighted phrase models and CAM visual mesh mappings instantly.</p>
               )}
               {selectedExtensionTab === "manifest" && (
-                <p>Fully compliant with Chrome's Manifest V3 standards. All scripts run in sandboxed contexts without access to your credentials or persistent browsing databases, protecting user privacy.</p>
+                <p>Fully compliant with Chrome&apos;s Manifest V3 standards. All scripts run in sandboxed contexts without access to your credentials or persistent browsing databases, protecting user privacy.</p>
               )}
             </div>
 
