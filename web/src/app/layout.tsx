@@ -26,7 +26,9 @@ export const metadata: Metadata = {
     { name: "Christian B. Valenzuela" }
   ],
   icons: {
-    icon: "/prism_logo.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/prism_logo.png",
   },
 };
 
