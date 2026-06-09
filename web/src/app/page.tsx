@@ -661,21 +661,27 @@ export default function PrismLanding() {
               className="w-8 h-8 flex flex-col justify-center items-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 focus:outline-none transition-colors cursor-pointer"
               aria-label="Toggle Menu"
             >
-              <motion.span
-                animate={isMobileMenuOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }}
-                transition={{ duration: 0.2 }}
-                className="w-5 h-0.5 bg-current rounded-full"
-              />
-              <motion.span
-                animate={isMobileMenuOpen ? { opacity: 0, scale: 0.8 } : { opacity: 1, scale: 1 }}
-                transition={{ duration: 0.2 }}
-                className="w-5 h-0.5 bg-current rounded-full"
-              />
-              <motion.span
-                animate={isMobileMenuOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }}
-                transition={{ duration: 0.2 }}
-                className="w-5 h-0.5 bg-current rounded-full"
-              />
+              <motion.div
+                animate={{ rotate: isMobileMenuOpen ? 180 : 0 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                className="w-full h-full flex flex-col justify-center items-center gap-1"
+              >
+                <motion.span
+                  animate={isMobileMenuOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="w-5 h-0.5 bg-current rounded-full"
+                />
+                <motion.span
+                  animate={isMobileMenuOpen ? { x: -8, opacity: 0 } : { x: 0, opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-5 h-0.5 bg-current rounded-full"
+                />
+                <motion.span
+                  animate={isMobileMenuOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="w-5 h-0.5 bg-current rounded-full"
+                />
+              </motion.div>
             </button>
           </div>
         </div>
