@@ -91,6 +91,16 @@ export default function PrismLanding() {
   const [demoUrl, setDemoUrl] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -303,7 +313,7 @@ export default function PrismLanding() {
 
   // Asymmetrical starting coordinates for the 8 convergence cards
   // Progress 0.0 means dispersed, 0.6 means clustered tightly
-  const cardTransforms = [
+  const cardTransformsDesktop = [
     {
       x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-350, 0]),
       y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-250, 0]),
@@ -353,6 +363,59 @@ export default function PrismLanding() {
       rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-10, 0]),
     },
   ];
+
+  const cardTransformsMobile = [
+    {
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-120, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-120, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-10, 0]),
+    },
+    {
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-40, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-150, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0, 0]),
+    },
+    {
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [40, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-150, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [10, 0]),
+    },
+    {
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [120, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-120, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [5, 0]),
+    },
+    {
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [120, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [120, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-10, 0]),
+    },
+    {
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [40, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [150, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0, 0]),
+    },
+    {
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-40, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [150, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [10, 0]),
+    },
+    {
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-120, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [120, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-5, 0]),
+    },
+  ];
+
+  const cardTransforms = isMobile ? cardTransformsMobile : cardTransformsDesktop;
 
   // Footer blur transition: drop filters from heavy blur down to structural clarity
   const footerBlur = useTransform(smoothFooterProgress, [0.1, 0.95], ["blur(35px)", "blur(0px)"]);
@@ -580,22 +643,39 @@ export default function PrismLanding() {
             </motion.a>
           </div>
 
-          {/* Mobile hamburger menu toggle button */}
-          <div className="flex md:hidden items-center gap-2">
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 bg-[#F4F1EA] dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-all text-slate-800 dark:text-slate-200 cursor-pointer"
-              aria-label="Toggle Dark Mode"
+          {/* Mobile controls (Install Extension & Morphing Hamburger) */}
+          <div className="flex md:hidden items-center gap-3">
+            <motion.a 
+              href="#extension" 
+              whileHover={{ scale: 1.03, y: -0.5 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="flex items-center justify-center w-8 h-8 bg-slate-950 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-[#FDFBF7] dark:text-slate-950 rounded-full shadow-sm transition-colors cursor-pointer"
+              aria-label="Install Extension"
             >
-              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
+              <Download className="w-4 h-4" />
+            </motion.a>
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 focus:outline-none transition-colors"
+              className="w-8 h-8 flex flex-col justify-center items-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 focus:outline-none transition-colors cursor-pointer"
               aria-label="Toggle Menu"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <motion.span
+                animate={isMobileMenuOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="w-5 h-0.5 bg-current rounded-full"
+              />
+              <motion.span
+                animate={isMobileMenuOpen ? { opacity: 0, scale: 0.8 } : { opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+                className="w-5 h-0.5 bg-current rounded-full"
+              />
+              <motion.span
+                animate={isMobileMenuOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="w-5 h-0.5 bg-current rounded-full"
+              />
             </button>
           </div>
         </div>
@@ -675,7 +755,7 @@ export default function PrismLanding() {
         <div className="relative z-10 w-full max-w-[95%] xl:max-w-[98%] mx-auto flex flex-col items-center text-center justify-center flex-1 min-h-0">
           
           {/* Node Tree Layout (Imitating user screenshot) */}
-          <div className="relative w-full max-w-[95%] xl:max-w-[98%] h-[230px] sm:h-[280px] md:h-[320px] lg:h-[350px] xl:h-[380px] mx-auto overflow-visible mb-3 md:mb-5 flex items-center justify-center flex-shrink min-h-0">
+          <div className="relative w-full max-w-[95%] xl:max-w-[98%] h-[250px] sm:h-[280px] md:h-[320px] lg:h-[350px] xl:h-[380px] mx-auto overflow-visible mb-3 md:mb-5 flex items-center justify-center flex-shrink min-h-0">
             
             {/* Desktop Branching Connector Lines */}
             <div className="absolute inset-0 pointer-events-none hidden md:block z-0">
@@ -761,56 +841,82 @@ export default function PrismLanding() {
               </div>
             </div>
  
-            {/* Mobile Layout (md:hidden Stacked Cluster) */}
-            <div className="md:hidden flex flex-col items-center gap-3 w-full max-w-xs mx-auto px-4 mt-2 relative">
-              {/* Central Logo Container */}
-              <div className="relative w-28 h-28 flex items-center justify-center z-10">
-                <svg viewBox="0 0 200 200" className="w-full h-full fill-none">
+            {/* Mobile Layout (md:hidden Branching Node Tree) */}
+            <div className="md:hidden absolute inset-0 z-10 pointer-events-auto">
+              {/* Mobile Branching Connector Lines */}
+              <div className="absolute inset-0 pointer-events-none z-0">
+                <svg viewBox="0 0 1000 360" className="w-full h-full stroke-slate-200/70 dark:stroke-slate-800/70 stroke-[1] fill-none" preserveAspectRatio="none">
+                  {/* Horizontal Main Axis */}
+                  <line x1="80" y1="180" x2="940" y2="180" />
+                  
+                  {/* Diagonal Left Branches */}
+                  <line x1="330" y1="180" x2="190" y2="70" />
+                  <line x1="360" y1="180" x2="230" y2="290" />
+                  
+                  {/* Diagonal Right Branches */}
+                  <line x1="670" y1="180" x2="770" y2="70" />
+                  <line x1="640" y1="180" x2="790" y2="290" />
+
+                  {/* Branching connection node points */}
+                  <circle cx="190" cy="70" r="3.5" className="fill-[#0077BE]" />
+                  <circle cx="230" cy="290" r="3.5" className="fill-[#3CC4DB]" />
+                  <circle cx="770" cy="70" r="3.5" className="fill-[#0077BE]" />
+                  <circle cx="790" cy="290" r="3.5" className="fill-[#3CC4DB]" />
+                </svg>
+              </div>
+
+              {/* Far Left Avatar: Target Scan */}
+              <div className="absolute w-11 h-11 rounded-xl border-2 border-white dark:border-slate-800 shadow-md overflow-hidden left-[1.5%] top-[50%] -translate-y-1/2 group">
+                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover filter saturate-75 contrast-125" alt="PRISM Target Scan" />
+                <div className="absolute inset-0 bg-[#3CC4DB]/15 border border-[#3CC4DB]/40 animate-pulse" />
+              </div>
+
+              {/* Top Left Badge: GAN Identifier */}
+              <div className="absolute w-9 h-9 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/35 dark:to-amber-900/35 border border-amber-200 dark:border-amber-900/40 shadow-[0_4px_12px_rgba(245,158,11,0.1)] dark:shadow-none rounded-xl flex flex-col items-center justify-center left-[14%] top-[10%] -translate-y-1/2 cursor-pointer group">
+                <Cpu className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+                <span className="text-[5px] font-mono font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider mt-0.5">GAN Scan</span>
+              </div>
+
+              {/* Bottom Left Badge: Diffusion Engine */}
+              <div className="absolute w-9 h-9 bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-950/35 dark:to-cyan-900/35 border border-cyan-200 dark:border-cyan-900/40 shadow-[0_4px_12px_rgba(6,182,212,0.1)] dark:shadow-none rounded-xl flex flex-col items-center justify-center left-[18%] bottom-[10%] translate-y-1/2 cursor-pointer group">
+                <Layers className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform" />
+                <span className="text-[5px] font-mono font-bold text-cyan-800 dark:text-cyan-300 uppercase tracking-wider mt-0.5">Diffusion</span>
+              </div>
+
+              {/* Center Logo Container */}
+              <div className="absolute w-24 h-24 left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer">
+                <svg viewBox="0 0 200 200" className="w-[90%] h-[90%] fill-none">
                   <circle cx="100" cy="100" r="85" stroke="#3CC4DB" strokeWidth="2" strokeDasharray="60 30 10 5" className="opacity-80 rotate-[35deg] origin-center" />
                   <circle cx="100" cy="100" r="75" stroke="#0077BE" strokeWidth="1" strokeDasharray="40 20" className="opacity-60 -rotate-[15deg] origin-center" />
-                  <polygon points="100,45 155,140 45,140" stroke="#3CC4DB" strokeWidth="3" />
+                  <polygon points="100,45 155,140 45,140" stroke="#3CC4DB" strokeWidth="3" className="drop-shadow-[0_0_12px_rgba(60,196,219,0.3)]" />
                   <line x1="100" y1="45" x2="100" y2="140" stroke="#0077BE" strokeWidth="2" />
                   <line x1="100" y1="105" x2="45" y2="140" stroke="#0077BE" strokeWidth="1.5" />
                   <line x1="100" y1="105" x2="155" y2="140" stroke="#0077BE" strokeWidth="1.5" />
                   <path d="M5,100 L100,100" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="2.5" />
-                  <path d="M100,100 L195,65" stroke="#3CC4DB" strokeWidth="2.5" />
-                  <path d="M100,100 L195,80" stroke="#00A2C9" strokeWidth="2.5" />
-                  <path d="M100,100 L195,95" stroke="#008BB4" strokeWidth="2" />
-                  <path d="M100,100 L195,110" stroke="#0077BE" strokeWidth="2" />
-                  <path d="M100,100 L195,125" stroke="#005A92" strokeWidth="1.5" />
+                  <path d="M100,100 L195,65" stroke="#3CC4DB" strokeWidth="2.5" className="opacity-95" />
+                  <path d="M100,100 L195,80" stroke="#00A2C9" strokeWidth="2.5" className="opacity-90" />
+                  <path d="M100,100 L195,95" stroke="#008BB4" strokeWidth="2" className="opacity-85" />
+                  <path d="M100,100 L195,110" stroke="#0077BE" strokeWidth="2" className="opacity-80" />
+                  <path d="M100,100 L195,125" stroke="#005A92" strokeWidth="1.5" className="opacity-75" />
                 </svg>
               </div>
 
-              {/* Minimalist circular orbit badges */}
-              <div className="flex flex-wrap justify-center gap-1.5 w-full z-10">
-                <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-sm">
-                  <Cpu className="w-3 h-3 text-amber-600" />
-                  <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300">GAN Scan</span>
-                </div>
-                <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-sm">
-                  <Layers className="w-3 h-3 text-cyan-600" />
-                  <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300">Diffusion</span>
-                </div>
-                <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-sm">
-                  <Shield className="w-3 h-3 text-rose-600" />
-                  <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300">Sentry</span>
-                </div>
-                <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-sm">
-                  <Eye className="w-3 h-3 text-[#0077BE]" />
-                  <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300">Tracker</span>
-                </div>
+              {/* Top Right Badge: Synthetic Sentry */}
+              <div className="absolute w-9 h-9 bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-950/35 dark:to-rose-900/35 border border-rose-200 dark:border-rose-900/40 shadow-[0_4px_12px_rgba(244,63,94,0.1)] dark:shadow-none rounded-xl flex flex-col items-center justify-center right-[18%] top-[10%] -translate-y-1/2 cursor-pointer group">
+                <Shield className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform" />
+                <span className="text-[5px] font-mono font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider mt-0.5">Sentry</span>
               </div>
-              
-              {/* Overlapping premium avatars instead of blocky layout */}
-              <div className="flex -space-x-3 justify-center z-10 mt-0.5">
-                <div className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-900 shadow-md overflow-hidden relative">
-                  <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover filter saturate-75" alt="PRISM Mobile Scan" />
-                  <div className="absolute inset-0 bg-[#3CC4DB]/15 border border-[#3CC4DB]/30 rounded-full" />
-                </div>
-                <div className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-900 shadow-md overflow-hidden relative">
-                  <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover filter saturate-75" alt="PRISM Mobile Scan" />
-                  <div className="absolute inset-0 bg-[#0077BE]/15 border border-[#0077BE]/30 rounded-full" />
-                </div>
+
+              {/* Bottom Right Avatar: Target Scan */}
+              <div className="absolute w-11 h-11 rounded-xl border-2 border-white dark:border-slate-800 shadow-md overflow-hidden right-[14%] bottom-[10%] translate-y-1/2 group">
+                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover filter saturate-75 contrast-125" alt="PRISM Target Scan" />
+                <div className="absolute inset-0 bg-[#0077BE]/15 border border-[#0077BE]/40 animate-pulse" />
+              </div>
+
+              {/* Far Right Badge: Tracker */}
+              <div className="absolute w-9 h-9 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-[0_4px_12px_rgba(0,0,0,0.03)] dark:shadow-none rounded-xl flex flex-col items-center justify-center right-[1.5%] top-[50%] -translate-y-1/2 cursor-pointer group">
+                <Eye className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300 group-hover:scale-110 transition-transform" />
+                <span className="text-[5px] font-mono font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mt-0.5">Tracker</span>
               </div>
             </div>
  
@@ -885,7 +991,16 @@ export default function PrismLanding() {
           <div className="absolute inset-0 w-full h-full pointer-events-auto">
             {solutionCards.map((card, index) => {
               const transform = cardTransforms[index];
-              const leftPositions = [
+              const leftPositions = isMobile ? [
+                "calc(50% - 178px)", // 1. Top-Left
+                "calc(50% - 93px)",  // 2. Top-Center-Left
+                "calc(50% - 3px)",   // 3. Top-Center-Right
+                "calc(50% + 82px)",  // 4. Top-Right
+                "calc(50% + 82px)",  // 5. Bottom-Right
+                "calc(50% - 3px)",   // 6. Bottom-Center-Right
+                "calc(50% - 93px)",  // 7. Bottom-Center-Left
+                "calc(50% - 178px)"  // 8. Bottom-Left
+              ] : [
                 "calc(50% - 440px)", // 1. Top-Left
                 "calc(50% - 112px)", // 2. Top-Center
                 "calc(50% + 220px)", // 3. Top-Right
@@ -895,7 +1010,16 @@ export default function PrismLanding() {
                 "calc(50% - 440px)", // 7. Bottom-Left
                 "calc(50% - 540px)"  // 8. Left-Center
               ];
-              const topPositions = [
+              const topPositions = isMobile ? [
+                "calc(50% - 260px)", // 1. Top-Left
+                "calc(50% - 310px)", // 2. Top-Center-Left
+                "calc(50% - 310px)", // 3. Top-Center-Right
+                "calc(50% - 260px)", // 4. Top-Right
+                "calc(50% + 200px)", // 5. Bottom-Right
+                "calc(50% + 250px)", // 6. Bottom-Center-Right
+                "calc(50% + 250px)", // 7. Bottom-Center-Left
+                "calc(50% + 200px)"  // 8. Bottom-Left
+              ] : [
                 "calc(50% - 290px)", // 1. Top-Left
                 "calc(50% - 380px)", // 2. Top-Center
                 "calc(50% - 290px)", // 3. Top-Right
@@ -917,7 +1041,7 @@ export default function PrismLanding() {
                     left: leftPositions[index],
                     top: topPositions[index],
                   }}
-                  className="absolute w-44 md:w-56 aspect-[3/4] group bg-[#F4F1EA] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden cursor-crosshair shadow-md hover:shadow-2xl transition-all duration-500"
+                  className="absolute w-24 md:w-56 aspect-[3/4] group bg-[#F4F1EA] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden cursor-crosshair shadow-md hover:shadow-2xl transition-all duration-500"
                 >
                   {/* Portrait Asset */}
                   <img 
@@ -947,18 +1071,18 @@ export default function PrismLanding() {
                   <div className="absolute inset-0 bg-[linear-gradient(to_right,#3CC4DB15_1px,transparent_1px),linear-gradient(to_bottom,#3CC4DB15_1px,transparent_1px)] bg-[size:10px_10px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                   {/* Diagnostic telemetry details visible on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end text-left select-none">
-                    <span className="text-[10px] font-mono text-[#3CC4DB] font-bold tracking-widest uppercase mb-1">
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-2 md:p-4 flex flex-col justify-end text-left select-none">
+                    <span className="text-[7px] md:text-[10px] font-mono text-[#3CC4DB] font-bold tracking-widest uppercase mb-0.5 md:mb-1">
                       {card.anomalyType}
                     </span>
-                    <span className="text-white text-xs font-bold leading-tight truncate">
+                    <span className="text-white text-[9px] md:text-xs font-bold leading-tight truncate">
                       {card.name}
                     </span>
-                    <span className="text-[#DC143C] text-[10px] font-mono font-bold tracking-wider mt-1.5 border-t border-slate-700/60 pt-1">
+                    <span className="text-[#DC143C] text-[7px] md:text-[10px] font-mono font-bold tracking-wider mt-1 md:mt-1.5 border-t border-slate-700/60 pt-0.5 md:pt-1">
                       ANOMALY CONFIDENCE // {card.confidence}%
                     </span>
                     {/* Live values */}
-                    <div className="mt-2 text-[8px] font-mono text-slate-400 space-y-0.5 leading-none">
+                    <div className="mt-1 md:mt-2 text-[5px] md:text-[8px] font-mono text-slate-400 space-y-0.5 leading-none">
                       {card.telemetry.map((t, idx) => <div key={idx}>{t}</div>)}
                     </div>
                   </div>
