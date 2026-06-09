@@ -42,7 +42,6 @@ export default function PrismLanding() {
   const containerRef = useRef<HTMLDivElement>(null);
   const solutionsRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLElement>(null);
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [clockInference, setClockInference] = useState(0);
   const [selectedExtensionTab, setSelectedExtensionTab] = useState("passive");
   const [demoText, setDemoText] = useState("Grabe, check this out! AI-generated image daw ito ni President na ginawa sa AI app kahapon. Totoo ba ito?");
@@ -246,52 +245,52 @@ export default function PrismLanding() {
   // Progress 0.0 means dispersed, 0.6 means clustered tightly
   const cardTransforms = [
     {
-      x: useTransform(smoothSolutionsProgress, [0, 0.45], [-350, 0]),
-      y: useTransform(smoothSolutionsProgress, [0, 0.45], [-250, 0]),
-      scale: useTransform(smoothSolutionsProgress, [0, 0.45], [0.8, 1]),
-      rotate: useTransform(smoothSolutionsProgress, [0, 0.45], [-15, 0]),
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-350, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-250, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-15, 0]),
     },
     {
-      x: useTransform(smoothSolutionsProgress, [0, 0.45], [-120, 0]),
-      y: useTransform(smoothSolutionsProgress, [0, 0.45], [-450, 0]),
-      scale: useTransform(smoothSolutionsProgress, [0, 0.45], [0.75, 1]),
-      rotate: useTransform(smoothSolutionsProgress, [0, 0.45], [10, 0]),
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-350, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0, 0]),
     },
     {
-      x: useTransform(smoothSolutionsProgress, [0, 0.45], [150, 0]),
-      y: useTransform(smoothSolutionsProgress, [0, 0.45], [-350, 0]),
-      scale: useTransform(smoothSolutionsProgress, [0, 0.45], [0.85, 1]),
-      rotate: useTransform(smoothSolutionsProgress, [0, 0.45], [-8, 0]),
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [350, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-250, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [15, 0]),
     },
     {
-      x: useTransform(smoothSolutionsProgress, [0, 0.45], [400, 0]),
-      y: useTransform(smoothSolutionsProgress, [0, 0.45], [-200, 0]),
-      scale: useTransform(smoothSolutionsProgress, [0, 0.45], [0.7, 1]),
-      rotate: useTransform(smoothSolutionsProgress, [0, 0.45], [18, 0]),
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [400, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [10, 0]),
     },
     {
-      x: useTransform(smoothSolutionsProgress, [0, 0.45], [-400, 0]),
-      y: useTransform(smoothSolutionsProgress, [0, 0.45], [300, 0]),
-      scale: useTransform(smoothSolutionsProgress, [0, 0.45], [0.75, 1]),
-      rotate: useTransform(smoothSolutionsProgress, [0, 0.45], [12, 0]),
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [350, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [250, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-10, 0]),
     },
     {
-      x: useTransform(smoothSolutionsProgress, [0, 0.45], [-150, 0]),
-      y: useTransform(smoothSolutionsProgress, [0, 0.45], [450, 0]),
-      scale: useTransform(smoothSolutionsProgress, [0, 0.45], [0.8, 1]),
-      rotate: useTransform(smoothSolutionsProgress, [0, 0.45], [-10, 0]),
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [350, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0, 0]),
     },
     {
-      x: useTransform(smoothSolutionsProgress, [0, 0.45], [200, 0]),
-      y: useTransform(smoothSolutionsProgress, [0, 0.45], [380, 0]),
-      scale: useTransform(smoothSolutionsProgress, [0, 0.45], [0.78, 1]),
-      rotate: useTransform(smoothSolutionsProgress, [0, 0.45], [14, 0]),
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-350, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [250, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [10, 0]),
     },
     {
-      x: useTransform(smoothSolutionsProgress, [0, 0.45], [380, 0]),
-      y: useTransform(smoothSolutionsProgress, [0, 0.45], [250, 0]),
-      scale: useTransform(smoothSolutionsProgress, [0, 0.45], [0.82, 1]),
-      rotate: useTransform(smoothSolutionsProgress, [0, 0.45], [-12, 0]),
+      x: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-400, 0]),
+      y: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0, 0]),
+      scale: useTransform(smoothSolutionsProgress, [0.0, 0.5], [0.8, 1]),
+      rotate: useTransform(smoothSolutionsProgress, [0.0, 0.5], [-10, 0]),
     },
   ];
 
@@ -382,26 +381,7 @@ export default function PrismLanding() {
     }
   ];
 
-  const testimonials = [
-    {
-      quote: "PRISM's late-fusion architecture successfully flagged synthetics with unprecedented latency constraints, restoring trust in visual asset verification streams during active electoral cycles.",
-      author: "Director of Trust & Safety",
-      organization: "Global Social Initiative, Manila",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"
-    },
-    {
-      quote: "By combining Filipino BERT for Taglish code-switched texts with CNN-ViT for images, we managed to identify coordinated disinformation networks at a sub-2-second target speed.",
-      author: "Principal Media Forensic Analyst",
-      organization: "Southeast Asian Verification Council",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
-    },
-    {
-      quote: "The explainability module using Class Activation Maps (CAM) and text highlighting via LIME bridges the gap between deep learning and media literacy for the general public.",
-      author: "Associate Professor of Journalism",
-      organization: "Institute of Media & Communication Studies",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200"
-    }
-  ];
+
 
   // Handler for Interactive Demo Form
   const handleDemoVerify = (e: React.FormEvent) => {
@@ -471,32 +451,6 @@ export default function PrismLanding() {
   return (
     <div ref={containerRef} className="min-h-screen bg-[#FDFBF7] text-slate-900 selection:bg-[#3CC4DB]/30 selection:text-slate-900 overflow-x-clip font-sans relative">
       
-      {/* 0. FLOATING GLOBAL DECORATIVE AVATARS (Drifting smoothly on asynchronous spring loops) */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <motion.div 
-          className="absolute w-20 h-20 rounded-2xl border border-[#3CC4DB]/20 bg-[#F4F1EA]/80 backdrop-blur-sm p-1 shadow-sm top-[20%] left-[8%]"
-          animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
-          transition={{ ease: "easeInOut", duration: 8, repeat: Infinity }}
-        >
-          <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150" className="w-full h-full object-cover rounded-xl filter grayscale contrast-125" alt="Drifting Avatar" />
-        </motion.div>
-        
-        <motion.div 
-          className="absolute w-24 h-24 rounded-2xl border border-[#0077BE]/20 bg-[#F4F1EA]/80 backdrop-blur-sm p-1 shadow-sm top-[60%] right-[6%]"
-          animate={{ y: [0, -30, 0], x: [0, -15, 0] }}
-          transition={{ ease: "easeInOut", duration: 10, repeat: Infinity, delay: 1 }}
-        >
-          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150" className="w-full h-full object-cover rounded-xl filter grayscale contrast-125" alt="Drifting Avatar" />
-        </motion.div>
-
-        <motion.div 
-          className="absolute w-16 h-16 rounded-2xl border border-slate-200 bg-[#F4F1EA]/80 backdrop-blur-sm p-1 shadow-sm bottom-[15%] left-[5%]"
-          animate={{ y: [0, 25, 0], x: [0, 15, 0] }}
-          transition={{ ease: "easeInOut", duration: 7, repeat: Infinity, delay: 2 }}
-        >
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" className="w-full h-full object-cover rounded-xl filter grayscale contrast-125" alt="Drifting Avatar" />
-        </motion.div>
-      </div>
 
       {/* 1. HEADER & NAVIGATION (Editorial & Sleek Morphing Pill Header) */}
       <header className={`sticky top-3 md:top-6 z-50 w-[92%] max-w-5xl bg-white/90 backdrop-blur-md border border-slate-200/80 mx-auto mt-3 md:mt-6 mb-4 md:mb-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)] transition-all duration-300 flex flex-col items-center ${isMobileMenuOpen ? 'rounded-[2rem] py-4 px-6' : 'rounded-full py-2 md:py-2.5 px-4 md:px-8'}`}>
@@ -633,11 +587,11 @@ export default function PrismLanding() {
       </header>
 
       {/* 2. HERO SECTION (00:00 Canvas Physics) */}
-      <section className="relative min-h-[calc(100vh-100px)] md:min-h-[calc(100vh-120px)] flex flex-col items-center justify-center px-6 pt-4 md:pt-6 pb-10 md:pb-12 overflow-hidden border-b border-slate-200/60">
-        <div className="relative z-10 w-full max-w-[95%] xl:max-w-[98%] mx-auto flex flex-col items-center text-center">
+      <section className="relative h-[calc(100dvh-90px)] md:h-[calc(100dvh-120px)] flex flex-col items-center justify-center px-4 pt-2 md:pt-4 pb-4 md:pb-6 overflow-hidden border-b border-slate-200/60">
+        <div className="relative z-10 w-full max-w-[95%] xl:max-w-[98%] mx-auto flex flex-col items-center text-center justify-center flex-1 min-h-0">
           
           {/* Node Tree Layout (Imitating user screenshot) */}
-          <div className="relative w-full max-w-[95%] xl:max-w-[98%] h-[360px] md:h-[400px] mx-auto overflow-visible mb-6 flex items-center justify-center">
+          <div className="relative w-full max-w-[95%] xl:max-w-[98%] h-[230px] sm:h-[280px] md:h-[320px] lg:h-[350px] xl:h-[380px] mx-auto overflow-visible mb-3 md:mb-5 flex items-center justify-center flex-shrink min-h-0">
             
             {/* Desktop Branching Connector Lines */}
             <div className="absolute inset-0 pointer-events-none hidden md:block z-0">
@@ -664,26 +618,26 @@ export default function PrismLanding() {
             {/* Desktop Absolute-Positioned Nodes */}
             <div className="hidden md:block absolute inset-0 z-10 pointer-events-auto">
               {/* Far Left Avatar: Synthetic scan target */}
-              <div className="absolute w-28 h-28 md:w-36 md:h-36 rounded-[2rem] border-4 border-white shadow-[0_12px_30px_rgba(0,0,0,0.06)] overflow-hidden left-[1.5%] top-[50%] -translate-y-1/2 group transition-transform duration-500 hover:scale-105">
+              <div className="absolute w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-30 lg:h-30 xl:w-36 xl:h-36 rounded-2xl md:rounded-[2rem] border-4 border-white shadow-[0_12px_30px_rgba(0,0,0,0.06)] overflow-hidden left-[1.5%] top-[50%] -translate-y-1/2 group transition-transform duration-500 hover:scale-105">
                 <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=400" className="w-full h-full object-cover filter saturate-75 contrast-125" alt="PRISM Target Scan" />
                 <div className="absolute inset-0 bg-[#3CC4DB]/15 border border-[#3CC4DB]/40 animate-pulse" />
               </div>
 
               {/* Top Left Badge (Yellowish Gradient): GAN Identifier */}
-              <div className="absolute w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 shadow-[0_8px_24px_rgba(245,158,11,0.1)] rounded-3xl flex flex-col items-center justify-center left-[14%] top-[10%] -translate-y-1/2 transition-transform duration-300 hover:-translate-y-1/3 hover:scale-105 cursor-pointer group">
-                <Cpu className="w-9 h-9 text-amber-600 group-hover:scale-110 transition-transform" />
-                <span className="text-[9px] font-mono font-bold text-amber-800 uppercase tracking-widest mt-1">GAN Scan</span>
+              <div className="absolute w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 xl:w-24 xl:h-24 bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 shadow-[0_8px_24px_rgba(245,158,11,0.1)] rounded-2xl md:rounded-3xl flex flex-col items-center justify-center left-[14%] top-[10%] -translate-y-1/2 transition-transform duration-300 hover:-translate-y-1/3 hover:scale-105 cursor-pointer group">
+                <Cpu className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 xl:w-9 xl:h-9 text-amber-600 group-hover:scale-110 transition-transform" />
+                <span className="text-[7px] sm:text-[8px] lg:text-[9px] font-mono font-bold text-amber-800 uppercase tracking-widest mt-0.5 sm:mt-1">GAN Scan</span>
               </div>
 
               {/* Bottom Left Badge (Cyan Gradient): Diffusion Engine */}
-              <div className="absolute w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 shadow-[0_8px_24px_rgba(6,182,212,0.1)] rounded-3xl flex flex-col items-center justify-center left-[18%] bottom-[10%] translate-y-1/2 transition-transform duration-300 hover:translate-y-1/3 hover:scale-105 cursor-pointer group">
-                <Layers className="w-9 h-9 text-cyan-600 group-hover:scale-110 transition-transform" />
-                <span className="text-[9px] font-mono font-bold text-cyan-800 uppercase tracking-widest mt-1">Diffusion</span>
+              <div className="absolute w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 xl:w-24 xl:h-24 bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 shadow-[0_8px_24px_rgba(6,182,212,0.1)] rounded-2xl md:rounded-3xl flex flex-col items-center justify-center left-[18%] bottom-[10%] translate-y-1/2 transition-transform duration-300 hover:translate-y-1/3 hover:scale-105 cursor-pointer group">
+                <Layers className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 xl:w-9 xl:h-9 text-cyan-600 group-hover:scale-110 transition-transform" />
+                <span className="text-[7px] sm:text-[8px] lg:text-[9px] font-mono font-bold text-cyan-800 uppercase tracking-widest mt-0.5 sm:mt-1">Diffusion</span>
               </div>
 
               {/* Center Logo Container */}
               <motion.div 
-                className="absolute w-52 h-52 md:w-72 md:h-72 left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer"
+                className="absolute w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 lg:w-56 lg:h-56 xl:w-72 xl:h-72 left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 150, damping: 12 }}
               >
@@ -705,28 +659,28 @@ export default function PrismLanding() {
               </motion.div>
 
               {/* Top Right Badge (Rose/Orange Gradient): Synthetic Sentry */}
-              <div className="absolute w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-rose-50 to-rose-100 border border-rose-200 shadow-[0_8px_24px_rgba(244,63,94,0.1)] rounded-3xl flex flex-col items-center justify-center right-[18%] top-[10%] -translate-y-1/2 transition-transform duration-300 hover:-translate-y-1/3 hover:scale-105 cursor-pointer group">
-                <Shield className="w-9 h-9 text-rose-600 group-hover:scale-110 transition-transform" />
-                <span className="text-[9px] font-mono font-bold text-rose-800 uppercase tracking-widest mt-1">Sentry</span>
+              <div className="absolute w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 xl:w-24 xl:h-24 bg-gradient-to-br from-rose-50 to-rose-100 border border-rose-200 shadow-[0_8px_24px_rgba(244,63,94,0.1)] rounded-2xl md:rounded-3xl flex flex-col items-center justify-center right-[18%] top-[10%] -translate-y-1/2 transition-transform duration-300 hover:-translate-y-1/3 hover:scale-105 cursor-pointer group">
+                <Shield className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 xl:w-9 xl:h-9 text-rose-600 group-hover:scale-110 transition-transform" />
+                <span className="text-[7px] sm:text-[8px] lg:text-[9px] font-mono font-bold text-rose-800 uppercase tracking-widest mt-0.5 sm:mt-1">Sentry</span>
               </div>
 
               {/* Bottom Right Avatar: Target Scan */}
-              <div className="absolute w-28 h-28 md:w-36 md:h-36 rounded-[2rem] border-4 border-white shadow-[0_12px_30px_rgba(0,0,0,0.06)] overflow-hidden right-[14%] bottom-[10%] translate-y-1/2 group transition-transform duration-500 hover:scale-105">
+              <div className="absolute w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-30 lg:h-30 xl:w-36 xl:h-36 rounded-2xl md:rounded-[2rem] border-4 border-white shadow-[0_12px_30px_rgba(0,0,0,0.06)] overflow-hidden right-[14%] bottom-[10%] translate-y-1/2 group transition-transform duration-500 hover:scale-105">
                 <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400" className="w-full h-full object-cover filter saturate-75 contrast-125" alt="PRISM Target Scan" />
                 <div className="absolute inset-0 bg-[#0077BE]/15 border border-[#0077BE]/40 animate-pulse" />
               </div>
 
               {/* Far Right Badge (White): Temporal Tracker */}
-              <div className="absolute w-20 h-20 md:w-24 md:h-24 bg-white border border-slate-200/80 shadow-[0_8px_24px_rgba(0,0,0,0.03)] rounded-3xl flex flex-col items-center justify-center right-[1.5%] top-[50%] -translate-y-1/2 transition-transform duration-300 hover:scale-105 cursor-pointer group">
-                <Eye className="w-9 h-9 text-slate-700 group-hover:scale-110 transition-transform" />
-                <span className="text-[9px] font-mono font-bold text-slate-700 uppercase tracking-widest mt-1">Tracker</span>
+              <div className="absolute w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 xl:w-24 xl:h-24 bg-white border border-slate-200/80 shadow-[0_8px_24px_rgba(0,0,0,0.03)] rounded-2xl md:rounded-3xl flex flex-col items-center justify-center right-[1.5%] top-[50%] -translate-y-1/2 transition-transform duration-300 hover:scale-105 cursor-pointer group">
+                <Eye className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 xl:w-9 xl:h-9 text-slate-700 group-hover:scale-110 transition-transform" />
+                <span className="text-[7px] sm:text-[8px] lg:text-[9px] font-mono font-bold text-slate-700 uppercase tracking-widest mt-0.5 sm:mt-1">Tracker</span>
               </div>
             </div>
 
             {/* Mobile Layout (md:hidden Stacked Cluster) */}
-            <div className="md:hidden flex flex-col items-center gap-6 w-full max-w-sm mx-auto px-4 mt-4 relative">
+            <div className="md:hidden flex flex-col items-center gap-3 w-full max-w-xs mx-auto px-4 mt-2 relative">
               {/* Central Logo Container */}
-              <div className="relative w-36 h-36 flex items-center justify-center z-10">
+              <div className="relative w-28 h-28 flex items-center justify-center z-10">
                 <svg viewBox="0 0 200 200" className="w-full h-full fill-none">
                   <circle cx="100" cy="100" r="85" stroke="#3CC4DB" strokeWidth="2" strokeDasharray="60 30 10 5" className="opacity-80 rotate-[35deg] origin-center" />
                   <circle cx="100" cy="100" r="75" stroke="#0077BE" strokeWidth="1" strokeDasharray="40 20" className="opacity-60 -rotate-[15deg] origin-center" />
@@ -744,32 +698,32 @@ export default function PrismLanding() {
               </div>
 
               {/* Minimalist circular orbit badges */}
-              <div className="flex flex-wrap justify-center gap-2.5 w-full z-10">
-                <div className="bg-white/85 backdrop-blur-sm border border-slate-200/80 rounded-full px-3.5 py-1.5 flex items-center gap-1.5 shadow-sm">
-                  <Cpu className="w-3.5 h-3.5 text-amber-600" />
-                  <span className="text-[10px] font-bold text-slate-700">GAN Scan</span>
+              <div className="flex flex-wrap justify-center gap-1.5 w-full z-10">
+                <div className="bg-white/85 backdrop-blur-sm border border-slate-200/80 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-sm">
+                  <Cpu className="w-3 h-3 text-amber-600" />
+                  <span className="text-[9px] font-bold text-slate-700">GAN Scan</span>
                 </div>
-                <div className="bg-white/85 backdrop-blur-sm border border-slate-200/80 rounded-full px-3.5 py-1.5 flex items-center gap-1.5 shadow-sm">
-                  <Layers className="w-3.5 h-3.5 text-cyan-600" />
-                  <span className="text-[10px] font-bold text-slate-700">Diffusion</span>
+                <div className="bg-white/85 backdrop-blur-sm border border-slate-200/80 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-sm">
+                  <Layers className="w-3 h-3 text-cyan-600" />
+                  <span className="text-[9px] font-bold text-slate-700">Diffusion</span>
                 </div>
-                <div className="bg-white/85 backdrop-blur-sm border border-slate-200/80 rounded-full px-3.5 py-1.5 flex items-center gap-1.5 shadow-sm">
-                  <Shield className="w-3.5 h-3.5 text-rose-600" />
-                  <span className="text-[10px] font-bold text-slate-700">Sentry</span>
+                <div className="bg-white/85 backdrop-blur-sm border border-slate-200/80 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-sm">
+                  <Shield className="w-3 h-3 text-rose-600" />
+                  <span className="text-[9px] font-bold text-slate-700">Sentry</span>
                 </div>
-                <div className="bg-white/85 backdrop-blur-sm border border-slate-200/80 rounded-full px-3.5 py-1.5 flex items-center gap-1.5 shadow-sm">
-                  <Eye className="w-3.5 h-3.5 text-[#0077BE]" />
-                  <span className="text-[10px] font-bold text-slate-700">Tracker</span>
+                <div className="bg-white/85 backdrop-blur-sm border border-slate-200/80 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-sm">
+                  <Eye className="w-3 h-3 text-[#0077BE]" />
+                  <span className="text-[9px] font-bold text-slate-700">Tracker</span>
                 </div>
               </div>
               
               {/* Overlapping premium avatars instead of blocky layout */}
-              <div className="flex -space-x-4 justify-center z-10 mt-1">
-                <div className="w-14 h-14 rounded-full border-2 border-white shadow-md overflow-hidden relative">
+              <div className="flex -space-x-3 justify-center z-10 mt-0.5">
+                <div className="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden relative">
                   <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover filter saturate-75" alt="PRISM Mobile Scan" />
                   <div className="absolute inset-0 bg-[#3CC4DB]/15 border border-[#3CC4DB]/30 rounded-full" />
                 </div>
-                <div className="w-14 h-14 rounded-full border-2 border-white shadow-md overflow-hidden relative">
+                <div className="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden relative">
                   <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover filter saturate-75" alt="PRISM Mobile Scan" />
                   <div className="absolute inset-0 bg-[#0077BE]/15 border border-[#0077BE]/30 rounded-full" />
                 </div>
@@ -780,41 +734,41 @@ export default function PrismLanding() {
 
           {/* Editorial Title */}
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mt-3 md:mt-4 font-serif text-2xl sm:text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.08] max-w-4xl px-2"
+            className="mt-2 md:mt-3 font-serif text-xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1] max-w-4xl px-2"
           >
             Identification of <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0077BE] to-[#3CC4DB]">Synthetic Media</span> & Disinformation
           </motion.h1>
 
           {/* Subtitle */}
           <motion.p 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="mt-3 md:mt-4 text-xs md:text-base text-slate-600 max-w-2xl font-medium leading-relaxed px-4"
+            className="mt-2 md:mt-3 text-[10px] sm:text-xs md:text-sm lg:text-base text-slate-600 max-w-2xl font-medium leading-relaxed px-4"
           >
             PRISM is a multimodal deep learning system combining Taglish-aware NLP, CNN-ViT classifiers, and frame-level video forensics to detect AI-generated images passively in real time.
           </motion.p>
 
           {/* Call to Actions */}
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="mt-4 md:mt-6 flex flex-col sm:flex-row gap-3 justify-center items-center w-full max-w-xs sm:max-w-none px-4"
+            className="mt-3 md:mt-5 flex flex-col sm:flex-row gap-2.5 justify-center items-center w-full max-w-xs sm:max-w-none px-4"
           >
             <a 
               href="#demo"
-              className="flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-2 px-6 py-3 md:px-8 md:py-3.5 bg-[#DC143C] hover:bg-[#b01030] text-[#FDFBF7] font-bold rounded-full shadow-lg transition-all transform hover:-translate-y-1"
+              className="flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-2 px-6 py-2.5 md:px-8 md:py-3.5 bg-[#DC143C] hover:bg-[#b01030] text-[#FDFBF7] font-bold rounded-full shadow-lg transition-all transform hover:-translate-y-1 text-xs md:text-sm"
             >
               <span>Test Forensics Demo</span>
               <ArrowRight className="w-4 h-4" />
             </a>
             <a 
               href="#extension"
-              className="flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-2 px-6 py-3 md:px-8 md:py-3.5 bg-[#F4F1EA] hover:bg-slate-200 border border-slate-200/80 text-slate-800 font-bold rounded-full shadow-sm transition-all transform hover:-translate-y-1"
+              className="flex sm:inline-flex w-full sm:w-auto justify-center items-center gap-2 px-6 py-2.5 md:px-8 md:py-3.5 bg-[#F4F1EA] hover:bg-slate-200 border border-slate-200/80 text-slate-800 font-bold rounded-full shadow-sm transition-all transform hover:-translate-y-1 text-xs md:text-sm"
             >
               <Shield className="w-4 h-4 text-[#0077BE]" />
               <span>Explore Chrome Extension</span>
@@ -826,7 +780,7 @@ export default function PrismLanding() {
       </section>
 
       {/* 3. THE INTERACTIVE SOLUTIONS GRID (00:01 - 00:03 Scroll Physics) */}
-      <section ref={solutionsRef} id="solutions" className="relative min-h-[190vh] bg-[#F8F6F0] py-32 border-b border-slate-200/60 overflow-hidden">
+      <section ref={solutionsRef} id="solutions" className="relative min-h-[120vh] bg-[#F8F6F0] py-0 border-b border-slate-200/60 overflow-hidden">
         {/* Sticky Anchoring Container */}
         <div className="sticky top-0 h-screen w-full flex flex-col justify-center items-center overflow-hidden z-10 px-6">
           
@@ -839,7 +793,7 @@ export default function PrismLanding() {
               Asymmetrical Scroll Clustering Mapping
             </p>
             <p className="mt-4 text-xs font-semibold text-slate-500">
-              Scroll down to watch floating visual portrait forensics assemble, and hover over each portrait to activate anomalous Class Activation Map (CAM) overlays.
+              Scroll down to watch visual portrait forensics assemble and cluster close to the visual forensics window, and hover over each portrait to activate anomalous Class Activation Map (CAM) overlays.
             </p>
           </div>
 
@@ -847,8 +801,26 @@ export default function PrismLanding() {
           <div className="absolute inset-0 w-full h-full pointer-events-auto">
             {solutionCards.map((card, index) => {
               const transform = cardTransforms[index];
-              const leftPositions = ["15%", "40%", "72%", "82%", "5%", "28%", "52%", "78%"];
-              const topPositions = ["18%", "8%", "12%", "30%", "60%", "65%", "55%", "62%"];
+              const leftPositions = [
+                "calc(50% - 440px)", // 1. Top-Left
+                "calc(50% - 112px)", // 2. Top-Center
+                "calc(50% + 220px)", // 3. Top-Right
+                "calc(50% + 340px)", // 4. Right-Center
+                "calc(50% + 220px)", // 5. Bottom-Right
+                "calc(50% - 112px)", // 6. Bottom-Center
+                "calc(50% - 440px)", // 7. Bottom-Left
+                "calc(50% - 540px)"  // 8. Left-Center
+              ];
+              const topPositions = [
+                "calc(50% - 290px)", // 1. Top-Left
+                "calc(50% - 380px)", // 2. Top-Center
+                "calc(50% - 290px)", // 3. Top-Right
+                "calc(50% - 150px)", // 4. Right-Center
+                "calc(50% + 140px)", // 5. Bottom-Right
+                "calc(50% + 200px)", // 6. Bottom-Center
+                "calc(50% + 140px)", // 7. Bottom-Left
+                "calc(50% - 150px)"  // 8. Left-Center
+              ];
 
               return (
                 <motion.div
@@ -1258,41 +1230,70 @@ export default function PrismLanding() {
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 15 }}
-                    className="bg-slate-50 border border-slate-200/60 rounded-3xl p-6 min-h-[460px] grid grid-cols-1 md:grid-cols-12 gap-6 text-left items-stretch"
+                    className="bg-slate-50 border border-slate-200/60 rounded-3xl p-6 md:p-8 flex flex-col gap-6 text-left min-h-[460px] w-full"
                   >
-                    {/* Left Inner Column (Verdict Metrics list): md:col-span-4 */}
-                    <div className="md:col-span-4 flex flex-col gap-4 bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm justify-center">
-                      <div>
-                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block">
-                          Forensic Verdict
-                        </span>
-                        <span className={`text-xl font-black ${demoResult.verdict === "HIGH RISK" ? "text-[#DC143C]" : "text-green-600"} tracking-tight flex items-center gap-1.5 mt-0.5`}>
-                          {demoResult.verdict === "HIGH RISK" ? <AlertTriangle className="w-5 h-5 shrink-0" /> : <CheckCircle className="w-5 h-5 shrink-0" />}
-                          {demoResult.verdict}
-                        </span>
+                    {/* Stats Header Row: 3 columns */}
+                    <div className="grid grid-cols-3 gap-3 w-full">
+                      {/* Stat 1: Verdict */}
+                      <div className="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-between min-h-[120px]">
+                        <div className="flex justify-between items-start w-full gap-2">
+                          <span className="text-[9px] sm:text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest truncate">
+                            Verdict
+                          </span>
+                          <div className={`p-1.5 rounded-lg shrink-0 ${demoResult.verdict === "HIGH RISK" ? "bg-[#DC143C]/10 text-[#DC143C]" : "bg-green-100 text-green-700"}`}>
+                            {demoResult.verdict === "HIGH RISK" ? <AlertTriangle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <span className={`text-sm sm:text-lg font-black ${demoResult.verdict === "HIGH RISK" ? "text-[#DC143C]" : "text-green-600"} tracking-tight block`}>
+                            {demoResult.verdict}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="border-t border-slate-100 pt-3">
-                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block">
-                          Confidence Level
-                        </span>
-                        <span className="text-lg font-bold text-slate-800 tabular-nums">
-                          {demoResult.confidence}%
-                        </span>
+                      {/* Stat 2: Confidence */}
+                      <div className="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-between min-h-[120px] flex-1">
+                        <div className="flex justify-between items-start w-full gap-2">
+                          <span className="text-[9px] sm:text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest truncate">
+                            Confidence
+                          </span>
+                          <div className="p-1.5 rounded-lg bg-blue-50 text-[#0077BE] shrink-0">
+                            <Activity className="w-4 h-4" />
+                          </div>
+                        </div>
+                        <div className="mt-2 w-full">
+                          <span className="text-sm sm:text-lg font-bold text-slate-800 tabular-nums block">
+                            {demoResult.confidence}%
+                          </span>
+                          <div className="w-full bg-slate-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full ${demoResult.verdict === "HIGH RISK" ? "bg-[#DC143C]" : "bg-green-500"}`}
+                              style={{ width: `${demoResult.confidence}%` }}
+                            />
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="border-t border-slate-100 pt-3">
-                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block">
-                          Inference Time
-                        </span>
-                        <span className="text-lg font-mono text-slate-800 tabular-nums">
-                          {demoResult.metrics.latency}
-                        </span>
+                      {/* Stat 3: Inference Time */}
+                      <div className="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-between min-h-[120px]">
+                        <div className="flex justify-between items-start w-full gap-2">
+                          <span className="text-[9px] sm:text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest truncate">
+                            Inference
+                          </span>
+                          <div className="p-1.5 rounded-lg bg-purple-50 text-purple-600 shrink-0">
+                            <Clock className="w-4 h-4" />
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <span className="text-sm sm:text-lg font-mono font-bold text-slate-800 tabular-nums block">
+                            {demoResult.metrics.latency}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Right Inner Column (Explanations & Visualizations): md:col-span-8 */}
-                    <div className="md:col-span-8 flex flex-col justify-center">
+                    {/* Explanations & Visualizations container */}
+                    <div className="w-full flex-1 flex flex-col justify-center border-t border-slate-200/60 pt-6">
                       {/* Contextual Visualizations based on input type */}
                       {demoResult.metrics.type === "text" && (
                         <div className="space-y-4">
@@ -1479,10 +1480,10 @@ export default function PrismLanding() {
         </div>
       </section>
 
-      {/* 6. PLATFORM CAROUSEL & TESTIMONIAL SLIDERS (00:07 - 00:14) */}
-      <section className="py-24 border-y border-slate-200/60 bg-[#F4F1EA]/50 overflow-hidden relative">
+      {/* 6. PLATFORM CAROUSEL MARQUEE (00:07 - 00:14) */}
+      <section className="py-6 border-y border-slate-200/60 bg-[#F4F1EA]/50 overflow-hidden relative">
         {/* Continuous Marquee Banner */}
-        <div className="flex whitespace-nowrap overflow-hidden py-4 border-b border-slate-200/40 pointer-events-none select-none font-bold text-2xl text-slate-300 uppercase tracking-widest">
+        <div className="flex whitespace-nowrap overflow-hidden py-2 pointer-events-none select-none font-bold text-2xl text-slate-300 uppercase tracking-widest">
           <motion.div 
             animate={{ x: ["0%", "-50%"] }}
             transition={{ ease: "linear", duration: 30, repeat: Infinity }}
@@ -1503,75 +1504,6 @@ export default function PrismLanding() {
             <span>Taglish BERT Parser</span> <span className="text-[#0077BE]">•</span>
             <span>CNN-ViT Fusion Network</span> <span className="text-[#3CC4DB]">•</span>
           </motion.div>
-        </div>
-
-        {/* Testimonials Slider */}
-        <div className="max-w-5xl mx-auto px-6 mt-20">
-          <div className="text-center mb-12">
-            <h3 className="font-serif text-3xl font-extrabold tracking-tight">
-              Peer and Panel Reviews
-            </h3>
-            <p className="text-slate-500 text-sm mt-1">
-              Feedback from digital platform specialists & academic panel judges
-            </p>
-          </div>
-
-          <div className="relative flex flex-col items-center">
-            {/* Carousel track */}
-            <div className="w-full flex gap-6 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-8 justify-center">
-              {testimonials.map((t, index) => {
-                const isActive = index === activeTestimonial;
-                return (
-                  <motion.div
-                    key={index}
-                    onClick={() => setActiveTestimonial(index)}
-                    animate={{
-                      scale: isActive ? 1.0 : 0.95,
-                      opacity: isActive ? 1.0 : 0.5,
-                    }}
-                    className="min-w-[85%] sm:min-w-[65%] md:min-w-[50%] snap-center shrink-0 bg-white p-8 md:p-10 rounded-3xl border border-slate-200 shadow-sm cursor-pointer transition-all duration-300 relative"
-                  >
-                    <div className="flex gap-1.5 text-[#3CC4DB] mb-6">
-                      {"★★★★★".split("").map((star, i) => <span key={i} className="text-lg">★</span>)}
-                    </div>
-
-                    <p className="font-serif italic text-lg text-slate-700 leading-relaxed">
-                      "{t.quote}"
-                    </p>
-
-                    <div className="mt-8 flex items-center gap-4 border-t border-slate-100 pt-6">
-                      <img 
-                        src={t.avatar} 
-                        alt={t.author} 
-                        className="w-12 h-12 rounded-full object-cover border border-slate-200 filter grayscale" 
-                      />
-                      <div className="text-left">
-                        <div className="font-bold text-slate-900 leading-tight">
-                          {t.author}
-                        </div>
-                        <div className="text-xs text-[#0077BE] font-semibold mt-1">
-                          {t.organization}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* Slider Dots indicators */}
-            <div className="flex gap-2.5 mt-4">
-              {testimonials.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveTestimonial(i)}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    i === activeTestimonial ? "bg-[#0077BE] w-6" : "bg-slate-300"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
@@ -1739,12 +1671,6 @@ export default function PrismLanding() {
                 journal: "PRISM Technical Report 2026 // Research Consortium",
                 authors: "Lance Adrian D. Acal, Jericho G. Delos Reyes, Lee Adrian D. Noroña, Christian B. Valenzuela",
                 desc: "This paper outlines the technical and conceptual framework of PRISM. Discusses the localized Taglish DistilBERT implementation alongside the CNN-ViT late-fusion visual analysis to bridge the gap between deep learning forensics and social media users."
-              },
-              {
-                title: "Multitask Transfer Learning for Low-Resource Disinformation Classification",
-                journal: "LREC Reference Library Integration",
-                authors: "Cruz et al. (2020) / Diwan et al. (2021) Alignment",
-                desc: "Establishes the precedent for fine-tuning pre-trained BERT architectures on low-resource Filipino and Taglish social datasets to achieve high precision without requiring large-scale custom corpora."
               }
             ].map((pub, idx) => (
               <div key={idx} className="bg-white border border-slate-200 rounded-3xl p-8 hover:shadow-lg transition-shadow duration-300">
