@@ -757,7 +757,7 @@ export default function PrismLanding() {
       </header>
 
       {/* 2. HERO SECTION (00:00 Canvas Physics) */}
-      <section className="relative h-[calc(100dvh-90px)] md:h-[calc(100dvh-120px)] flex flex-col items-center justify-center px-4 pt-2 md:pt-4 pb-4 md:pb-6 overflow-hidden border-b border-slate-200/60 dark:border-slate-800/60">
+      <section className="relative h-[calc(100dvh-75px)] md:h-[calc(100dvh-100px)] flex flex-col items-center justify-center px-4 pt-2 md:pt-4 pb-4 md:pb-6 overflow-hidden border-b border-slate-200/60 dark:border-slate-800/60">
         <div className="relative z-10 w-full max-w-[95%] xl:max-w-[98%] mx-auto flex flex-col items-center text-center justify-center flex-1 min-h-0">
           
           {/* Node Tree Layout (Imitating user screenshot) */}
