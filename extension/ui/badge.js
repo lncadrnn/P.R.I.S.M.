@@ -44,6 +44,14 @@
   const ICON_DIAMOND = "◆";  // ◆ authenticity
   const ICON_WARN = "⚠";     // ⚠ error
 
+  // Facebook posts have ⋯ (more) and ✕ (hide) buttons in the top-right header.
+  // We shift the badge left of those (via the .prism-badge--fb class) so it
+  // doesn't sit on top of them.
+  const IS_FACEBOOK = (function () {
+    try { return location.hostname.indexOf("facebook.com") !== -1; }
+    catch (_) { return false; }
+  })();
+
   // -------------------------------------------------------------------------
   // DOM helpers
   // -------------------------------------------------------------------------
@@ -82,7 +90,7 @@
    */
   function makeRoot() {
     const root = document.createElement("div");
-    root.className = "prism-badge";
+    root.className = IS_FACEBOOK ? "prism-badge prism-badge--fb" : "prism-badge";
     root.setAttribute(BADGE_ATTR, "true");
     root.setAttribute("role", "button");
     root.setAttribute("tabindex", "0");

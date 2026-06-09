@@ -40,6 +40,16 @@
   top: 8px;
   right: 8px;
   z-index: 2147483640;
+}
+
+/* Facebook: clear the post header's ⋯ (more) and ✕ (hide) buttons by shifting
+ * the badge left of them. Higher specificity (two classes) so it beats the
+ * base `right: 8px` regardless of source order. */
+.prism-badge.prism-badge--fb {
+  right: 76px;
+}
+
+.prism-badge {
 
   /* Layout of the merged pill. */
   display: inline-flex !important;

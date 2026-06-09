@@ -392,34 +392,45 @@
     '[data-ad-rendering-role="story_message"],[data-ad-comet-preview="message"],' +
     '[data-ad-preview="message"],[data-testid="post_message"]';
 
+  // The post header's ⋯ menu button (and friends). The FULL post card is the
+  // smallest single-post ancestor that contains this — its top edge is the post
+  // header, so anchoring the badge there (top:8) lands it in the header row
+  // consistently, instead of mid-post on the caption.
+  const FB_ACTIONS_SELECTOR = '[aria-label*="Actions for" i],[aria-haspopup="menu"]';
+
   /**
-   * Given a Facebook caption marker, walk UP to the surrounding post CARD — the
-   * element we badge, dedupe, and read media from. We climb until the parent
-   * holds MORE THAN ONE caption marker (i.e. it's the multi-post feed/column),
-   * or becomes the wide page wrapper / role="main" / body. The last single-post
-   * ancestor is the card.
+   * Given a Facebook caption marker, walk UP to the full post CARD (header +
+   * body) — the element we badge, dedupe, and read media from. We return the
+   * first single-post ancestor that ALSO contains the header ⋯ button so the
+   * badge aligns to the header on EVERY post. If none is found before hitting
+   * the multi-post feed/column, we fall back to the last single-post ancestor.
    *
    * @param {Element} markerEl  The matched caption marker.
    * @returns {Element}         The post card (or the marker itself as fallback).
    */
   function resolveFacebookPost(markerEl) {
     let node = markerEl;
-    let best = markerEl;
-    for (let i = 0; i < 18 && node && node.parentElement; i++) {
+    let lastSingle = markerEl;
+    for (let i = 0; i < 20 && node && node.parentElement; i++) {
       const parent = node.parentElement;
       let width = 0;
       try { width = parent.getBoundingClientRect().width; } catch (_) { width = 0; }
       let markerCount = 1;
       try { markerCount = parent.querySelectorAll(FB_MARKER_SELECTOR).length; } catch (_) { markerCount = 1; }
       const role = parent.getAttribute ? parent.getAttribute("role") : null;
+      // Reached the multi-post container / page column → stop, use last good.
       if (markerCount > 1 || width > 900 || role === "main" || parent === document.body) {
-        best = node; // `node` is the largest ancestor containing just this post
         break;
       }
-      best = node;
       node = parent;
+      lastSingle = node;
+      // First single-post ancestor that includes the header ⋯ button is the
+      // full card (header + body). Anchor there for consistent placement.
+      let hasActions = false;
+      try { hasActions = !!node.querySelector(FB_ACTIONS_SELECTOR); } catch (_) { hasActions = false; }
+      if (hasActions) return node;
     }
-    return best || markerEl;
+    return lastSingle || markerEl;
   }
 
   // -------------------------------------------------------------------------
