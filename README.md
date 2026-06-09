@@ -4,7 +4,7 @@
 
 A multimodal deep learning system that simultaneously detects AI-generated text, fake images, and deepfake videos on Filipino social media (Facebook, TikTok, X), delivered as a browser extension and web interface with Explainable AI outputs.
 
-> Research project for the Next Gen Start-up Competition 2026 - Mapúa University, Makati Campus (June 18, 2026).
+> Research project for the Next Gen Start-up Competition 2026 - Mapúa University - Makati Campus (June 18, 2026).
 > Authors: Lance Adrian D. Acal · Jericho G. Delos Reyes · Lee Adrian D. Noroña · Christian B. Valenzuela.
 
 ---
