@@ -361,6 +361,26 @@
     return el.dataset.prismId;
   }
 
+  /**
+   * Resolve WHICH element the badge should anchor to. Content (caption, media)
+   * is always read from the post container, but on TikTok the post container is
+   * the full-width feed COLUMN — anchoring the badge there puts it in the
+   * screen's top-right corner. We instead anchor to the <video> player box so
+   * the badge sits on the video's top-right. Other platforms badge the post
+   * element itself.
+   *
+   * @param {Element} postEl  Post container the scanner found.
+   * @returns {Element}       Element to stamp the id on and attach the badge to.
+   */
+  function resolveBadgeAnchor(postEl) {
+    if (PLATFORM !== "tiktok" || !postEl || !postEl.querySelector) return postEl;
+    let video = null;
+    try { video = postEl.querySelector("video"); } catch (_) { video = null; }
+    if (!video) return postEl;
+    const wrapper = video.parentElement;
+    return (wrapper && wrapper.nodeType === 1 && wrapper !== postEl) ? wrapper : postEl;
+  }
+
   // -------------------------------------------------------------------------
   // Dispatch
   // -------------------------------------------------------------------------
@@ -400,10 +420,16 @@
 
     if (!hasScanableContent(text, mediaUrls)) return;
 
-    const postId = getOrAssignPostId(postEl, text, mediaUrls[0] || "");
+    // Content is read from postEl, but the badge anchors to the resolved
+    // element (the video player box on TikTok; postEl elsewhere). The id is
+    // stamped on the anchor so main.js's verdict lookup renders in the right
+    // place.
+    const anchorEl = resolveBadgeAnchor(postEl);
+    const postId = getOrAssignPostId(anchorEl, text, mediaUrls[0] || "");
 
-    // Stash the caption where badge.js / sidebar.js read it.
-    postEl.dataset.prismText = text || "";
+    // Stash the caption where badge.js / sidebar.js read it (on the anchor,
+    // which is the element passed to setScanning/render and the sidebar).
+    anchorEl.dataset.prismText = text || "";
 
     const payload = {
       text: text || null,
@@ -420,7 +446,12 @@
     // Paint the pending placeholder before we await anything.
     try {
       if (window.prismBadge && typeof window.prismBadge.setScanning === "function") {
-        window.prismBadge.setScanning(postEl, postId);
+        window.prismBadge.setScanning(anchorEl, postId, {
+          hasText: !!(text && text.trim()),
+          hasImage: !isVideo && mediaUrls.length > 0,
+          isVideo: isVideo,
+          platform: PLATFORM,
+        });
       }
     } catch (_) {
       // Badge failures must never abort the scan dispatch.
@@ -506,8 +537,20 @@
     ttSettleTimer = setTimeout(function () {
       const active = ttPickMostVisible();
       if (!active || active === ttActive) return;
+      // Switching to a new active video: clear the previous badge so only ONE
+      // shows at a time, and reset its guard so it can re-badge (from cache)
+      // if the user scrolls back to it.
+      if (ttActive && ttActive.isConnected) {
+        try {
+          if (window.prismBadge && typeof window.prismBadge.remove === "function") {
+            window.prismBadge.remove(resolveBadgeAnchor(ttActive));
+          }
+        } catch (_) { /* ignore */ }
+        ttActive.dataset.prismScanned = "false";
+      }
       ttActive = active;
-      // The active container (or a player nested in it) is the post to scan.
+      // The active container is the post to scan; the badge anchors to its
+      // nested <video> player box (see resolveBadgeAnchor).
       processPost(active);
     }, 250);
   }

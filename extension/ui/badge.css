@@ -155,15 +155,40 @@
 }
 
 /* ---------------------------------------------------------------------------
- * Hover tooltip — dark breakdown card anchored below/left of the badge.
- * Right edge aligns to the badge's right edge so it never overflows offscreen
- * on the right. Hidden until the badge is hovered/focused.
+ * Hover tooltip — dark breakdown card.
+ *
+ * Rendered as a SINGLE shared node appended to <body> and positioned `fixed`
+ * by JS (badge.js), NOT as a child of the badge. Social feeds (X especially)
+ * wrap posts in `overflow:hidden` containers that would clip an absolutely-
+ * positioned child; a fixed, body-level node escapes all ancestor clipping and
+ * is clamped to the viewport so it is never cut off at a screen edge.
+ *
+ * `all: initial` resets host-page inheritance since the node now lives outside
+ * the badge root (which has its own reset).
  * ------------------------------------------------------------------------- */
 .prism-bt {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;             /* anchor right edge to the badge's right edge */
-  left: auto;
+  all: initial;
+
+  /* Token palette (mirrors .prism-badge / verdict.js) — required here because
+   * the tooltip lives at <body> level and cannot inherit the badge's vars. */
+  --prism-fake: #e5484d;
+  --prism-real: #30a46c;
+  --prism-ai: #8e4ec6;
+  --prism-human: #0091ff;
+  --prism-unknown: #7a7d85;
+  --prism-scanning: #9aa0ab;
+  --prism-bg: #0d1b24;
+  --prism-bg-panel: #11242f;
+  --prism-bg-raised: #163140;
+  --prism-border: #23404f;
+  --prism-text: #e7eef2;
+  --prism-text-dim: #9fb3bd;
+  --prism-accent: #3fb6c9;
+
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
 
   width: 300px;
   max-height: 340px;
@@ -171,8 +196,8 @@
   box-sizing: border-box;
 
   padding: 12px 13px;
-  background: var(--prism-bg-panel);
-  border: 1px solid var(--prism-border);
+  background: var(--prism-bg-panel, #11242f);
+  border: 1px solid var(--prism-border, #23404f);
   border-radius: 12px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
 
@@ -181,19 +206,19 @@
   line-height: 1.45;
   font-weight: 400;
   letter-spacing: 0;
-  color: var(--prism-text);
+  color: var(--prism-text, #e7eef2);
   text-align: left;
 
-  /* Hidden by default; revealed on hover/focus of the badge. */
+  /* Hidden by default; JS adds .prism-bt--show on hover/focus of the badge. */
   opacity: 0;
   visibility: hidden;
   transform: translateY(-4px);
   transition: opacity 0.12s ease, transform 0.12s ease, visibility 0s linear 0.12s;
-  z-index: 1;
+  z-index: 2147483646;   /* above the badge (…640) and host overlays */
+  pointer-events: auto;
 }
 
-.prism-badge:hover .prism-bt,
-.prism-badge:focus-within .prism-bt {
+.prism-bt.prism-bt--show {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);

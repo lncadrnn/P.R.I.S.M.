@@ -115,6 +115,123 @@
   }
 
   // -------------------------------------------------------------------------
+  // Floating tooltip
+  //
+  // The hover card is a SINGLE shared node appended to <body> and positioned
+  // `fixed` by JS — NOT a child of each badge. Social feeds (X especially) wrap
+  // posts in `overflow:hidden` containers that would CLIP an absolutely-
+  // positioned child tooltip. A fixed, body-level node escapes all ancestor
+  // clipping, and we clamp it to the viewport so it is never cut off at a screen
+  // edge. One shared node also means no per-badge cleanup (no leaked tooltip
+  // nodes from virtualized feeds). Each badge stores only its tooltip HTML.
+  // -------------------------------------------------------------------------
+
+  let sharedTip = null;     // the single reused .prism-bt node
+  let activeRoot = null;    // badge root the tip is currently shown for
+  let hideTimer = null;
+  let reflowWired = false;
+
+  function cancelHide() {
+    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+  }
+
+  function scheduleHide() {
+    cancelHide();
+    hideTimer = setTimeout(hideTip, 140);
+  }
+
+  function hideTip() {
+    cancelHide();
+    if (sharedTip) sharedTip.classList.remove("prism-bt--show");
+    activeRoot = null;
+  }
+
+  function getSharedTip() {
+    if (sharedTip && sharedTip.isConnected) return sharedTip;
+    const tip = document.createElement("div");
+    tip.className = "prism-bt";
+    tip.setAttribute("data-prism-tip", "true");
+    // Keep the tip open while the pointer is on it (so it can be scrolled).
+    tip.addEventListener("mouseenter", cancelHide);
+    tip.addEventListener("mouseleave", scheduleHide);
+    (document.body || document.documentElement).appendChild(tip);
+    sharedTip = tip;
+    wireReflow();
+    return tip;
+  }
+
+  /** Keep a visible tip glued to its badge as the page scrolls / resizes. */
+  function wireReflow() {
+    if (reflowWired) return;
+    reflowWired = true;
+    const onReflow = function () {
+      if (!activeRoot) return;
+      if (!activeRoot.isConnected) { hideTip(); return; }
+      positionTip(activeRoot, sharedTip);
+    };
+    // Capture phase so inner scroll containers (feeds) are caught too.
+    window.addEventListener("scroll", onReflow, true);
+    window.addEventListener("resize", onReflow, true);
+  }
+
+  /** Place the fixed tip near the badge, clamped fully inside the viewport. */
+  function positionTip(root, tip) {
+    let r;
+    try { r = root.getBoundingClientRect(); } catch (_) { return; }
+    const vw = window.innerWidth || document.documentElement.clientWidth;
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const m = 8;     // viewport margin
+    const gap = 8;   // gap between badge and tip
+    const tw = tip.offsetWidth || 300;
+    const th = tip.offsetHeight || 0;
+
+    // Horizontal: align the tip's right edge to the badge's right edge, then
+    // clamp so neither side leaves the viewport.
+    let left = r.right - tw;
+    if (left + tw > vw - m) left = vw - m - tw;
+    if (left < m) left = m;
+
+    // Vertical: prefer below the badge; flip above if it would overflow the
+    // bottom; clamp into view either way.
+    let top = r.bottom + gap;
+    if (top + th > vh - m) {
+      const above = r.top - gap - th;
+      top = above >= m ? above : Math.max(m, vh - m - th);
+    }
+    if (top < m) top = m;
+
+    tip.style.left = Math.round(left) + "px";
+    tip.style.top = Math.round(top) + "px";
+  }
+
+  /** Show the shared tip for a badge root, filled from its stored HTML. */
+  function showTipFor(root) {
+    const html = root && root.__prismTipHtml;
+    if (!html) return;
+    cancelHide();
+    const tip = getSharedTip();
+    tip.innerHTML = html;
+    tip.scrollTop = 0;
+    activeRoot = root;
+    // Measure (visibility:hidden retains layout) then place, then reveal.
+    positionTip(root, tip);
+    tip.classList.add("prism-bt--show");
+  }
+
+  /**
+   * Store a badge's tooltip HTML on the root and wire hover/focus to drive the
+   * shared tip. Replaces the old "tooltip as a child of the badge" approach.
+   */
+  function attachTip(root, tipEl) {
+    if (!root || !tipEl) return;
+    root.__prismTipHtml = tipEl.innerHTML;
+    root.addEventListener("mouseenter", function () { showTipFor(root); });
+    root.addEventListener("mouseleave", scheduleHide);
+    root.addEventListener("focusin", function () { showTipFor(root); });
+    root.addEventListener("focusout", scheduleHide);
+  }
+
+  // -------------------------------------------------------------------------
   // Tooltip markup builders — all values pass through escapeHtml before they
   // touch innerHTML.
   // -------------------------------------------------------------------------
@@ -285,6 +402,67 @@
     return tip;
   }
 
+  /**
+   * Build the "still scanning" tooltip. Explains WHAT PRISM is checking and
+   * WHY it takes a moment, tailored to the modalities present in the post so
+   * the user understands the wait (e.g. video frame analysis is the slow path).
+   *
+   * @param {Object} [context]  Optional scan context from the scanner:
+   *   { hasText:boolean, hasImage:boolean, isVideo:boolean, platform:string }
+   */
+  function buildScanningTooltip(context) {
+    const esc = V().escapeHtml;
+    const ctx = context || {};
+    const hasText = !!ctx.hasText;
+    const hasImage = !!ctx.hasImage;
+    const isVideo = !!ctx.isVideo;
+
+    // One reason row per modality currently being analysed. Wording explains
+    // the actual forensic work, not just "loading".
+    const checks = [];
+    if (hasText) {
+      checks.push({
+        cat: "Caption",
+        detail: "checking Taglish wording against Filipino disinformation patterns and running the LIME explanation.",
+      });
+    }
+    if (isVideo) {
+      checks.push({
+        cat: "Video",
+        detail: "extracting key frames and analysing them for AI-generated / deepfake artifacts — this is the slowest check.",
+      });
+    } else if (hasImage) {
+      checks.push({
+        cat: "Image",
+        detail: "scanning for AI-generated content and manipulated regions.",
+      });
+    }
+
+    let html = `<div class="prism-bt-section">`;
+    html += `<div class="prism-bt-head" style="color:var(--prism-scanning)">`;
+    html += `PRISM is thoroughly checking this post…</div>`;
+    html += `<p class="prism-bt-summary">Each modality runs its own forensic model, then the results are fused into one verdict. This usually takes a few seconds.</p>`;
+
+    if (checks.length) {
+      html += `<div class="prism-bt-label">In progress</div>`;
+      html += `<ul class="prism-bt-reasons">`;
+      checks.forEach(function (c) {
+        html +=
+          `<li class="prism-bt-reason prism-bt-sev--low">` +
+          `<span class="prism-bt-cat">${esc(c.cat)}</span> ${esc(c.detail)}</li>`;
+      });
+      html += `</ul>`;
+    }
+
+    html += `</div>`;
+    html += `<div class="prism-bt-foot">Hang tight — decision-support only</div>`;
+
+    const tip = document.createElement("div");
+    tip.className = "prism-bt";
+    tip.innerHTML = html;
+    return tip;
+  }
+
   // -------------------------------------------------------------------------
   // Public surface
   // -------------------------------------------------------------------------
@@ -293,10 +471,13 @@
    * Attach a pulsing placeholder pill ("● PRISM …") while the post is being
    * scanned. Idempotent — replaces any prior badge on the element.
    *
-   * @param {Element} postEl  Host post container.
-   * @param {string}  postId  Stable id the scanner assigned to this post.
+   * @param {Element} postEl   Host post container.
+   * @param {string}  postId   Stable id the scanner assigned to this post.
+   * @param {Object}  [context]  What's being analysed, for the hover tooltip:
+   *   { hasText, hasImage, isVideo, platform }. Optional — a generic message
+   *   is shown when omitted.
    */
-  function setScanning(postEl, postId) {
+  function setScanning(postEl, postId, context) {
     if (!postEl || !postEl.appendChild) return;
     remove(postEl);
     ensureAnchored(postEl);
@@ -312,6 +493,14 @@
       `<span class="prism-badge-lbl">PRISM</span>` +
       `<span class="prism-badge-dots">…</span>`;
     root.appendChild(pill);
+
+    // Hover/focus reveals WHAT is being checked and WHY it takes a moment.
+    // Same shared floating tooltip the verdict badges use.
+    try {
+      attachTip(root, buildScanningTooltip(context));
+    } catch (_) {
+      // A missing tooltip must never block the placeholder from rendering.
+    }
 
     postEl.appendChild(root);
     return root;
@@ -373,7 +562,7 @@
       tooltip = buildErrorTooltip("Verdict could not be rendered.");
     }
 
-    if (tooltip) root.appendChild(tooltip);
+    attachTip(root, tooltip);
 
     wireClick(root, verdict, postId, postEl);
     postEl.appendChild(root);
@@ -391,6 +580,8 @@
     const nodes = postEl.querySelectorAll(`[${BADGE_ATTR}]`);
     for (let i = 0; i < nodes.length; i++) {
       const n = nodes[i];
+      // If the badge whose tip is currently shown is being removed, hide it.
+      if (n === activeRoot) hideTip();
       if (n && n.parentNode) n.parentNode.removeChild(n);
     }
   }
