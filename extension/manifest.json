@@ -1,0 +1,82 @@
+{
+  "manifest_version": 3,
+  "name": "PRISM — Multimodal Disinformation Shield",
+  "short_name": "PRISM",
+  "version": "1.0.0",
+  "description": "Passively scans Facebook, TikTok, and X posts for disinformation (Real/Fake) and AI-generated media (AI/Human) using the PRISM multimodal forensic system.",
+
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+
+  "host_permissions": [
+    "https://www.facebook.com/*",
+    "https://web.facebook.com/*",
+    "https://www.tiktok.com/*",
+    "https://twitter.com/*",
+    "https://x.com/*"
+  ],
+
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.facebook.com/*",
+        "https://web.facebook.com/*",
+        "https://www.tiktok.com/*",
+        "https://twitter.com/*",
+        "https://x.com/*"
+      ],
+      "js": [
+        "lib/verdict.js",
+        "ui/badge.js",
+        "ui/sidebar.js",
+        "content/scanner.js",
+        "content/main.js"
+      ],
+      "css": [
+        "ui/badge.css",
+        "ui/sidebar.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "action": {
+    "default_title": "PRISM — Disinformation Shield",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "ui/badge.css",
+        "ui/sidebar.css",
+        "icons/icon128.png"
+      ],
+      "matches": [
+        "https://www.facebook.com/*",
+        "https://web.facebook.com/*",
+        "https://www.tiktok.com/*",
+        "https://twitter.com/*",
+        "https://x.com/*"
+      ]
+    }
+  ]
+}

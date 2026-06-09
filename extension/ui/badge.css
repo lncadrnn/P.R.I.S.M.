@@ -1,0 +1,309 @@
+/**
+ * PRISM — Two-segment verdict badge + hover tooltip styles.
+ *
+ * Injected GLOBALLY via the manifest `css` array, so every rule is scoped
+ * under the `.prism-badge` root (and its `prism-`-prefixed descendants) to
+ * avoid leaking into the host page (Facebook / TikTok / X).
+ *
+ * The token colors below mirror `lib/verdict.js` TOKENS exactly. They are
+ * declared as CSS custom properties on `.prism-badge` so badge.js can hand
+ * them to segments via inline `--prism-seg-color` without recomputing hexes.
+ * Keep these in sync with verdict.js if the palette ever changes.
+ * ===========================================================================
+ */
+
+/* ---------------------------------------------------------------------------
+ * Badge root — fully reset so host-page CSS cannot distort it, then we
+ * re-assert the styling we actually want. `all: initial` wipes inherited
+ * font-size/line-height/etc.; we explicitly restore the essentials.
+ * ------------------------------------------------------------------------- */
+.prism-badge {
+  all: initial;
+
+  /* Token palette (mirrors verdict.js TOKENS). */
+  --prism-fake: #e5484d;
+  --prism-real: #30a46c;
+  --prism-ai: #8e4ec6;
+  --prism-human: #0091ff;
+  --prism-unknown: #7a7d85;
+  --prism-scanning: #9aa0ab;
+  --prism-bg: #0d1b24;
+  --prism-bg-panel: #11242f;
+  --prism-bg-raised: #163140;
+  --prism-border: #23404f;
+  --prism-text: #e7eef2;
+  --prism-text-dim: #9fb3bd;
+  --prism-accent: #3fb6c9;
+
+  /* Anchoring — top-right inside the (relatively-positioned) post element. */
+  position: absolute !important;
+  top: 8px;
+  right: 8px;
+  z-index: 2147483640;
+
+  /* Layout of the merged pill. */
+  display: inline-flex !important;
+  align-items: stretch;
+  box-sizing: border-box;
+
+  /* Forensic dark pill surface. */
+  background: rgba(13, 27, 36, 0.92); /* var(--prism-bg) @ ~92% */
+  border: 1px solid var(--prism-border);
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45), 0 0 0 0.5px rgba(0, 0, 0, 0.3);
+  overflow: visible;
+
+  /* Typography — do NOT inherit host page sizing. */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--prism-text);
+
+  cursor: pointer;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  backdrop-filter: blur(3px);
+}
+
+.prism-badge:focus-visible {
+  outline: 2px solid var(--prism-accent);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Segments — one per present axis. The credibility/authenticity color is fed
+ * in via the inline --prism-seg-color custom property set by badge.js.
+ * ------------------------------------------------------------------------- */
+.prism-badge-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+/* Round the outer ends of the merged pill regardless of which segment is
+ * first/last (segments are direct flex children of the root). */
+.prism-badge-seg:first-child {
+  border-top-left-radius: 999px;
+  border-bottom-left-radius: 999px;
+}
+.prism-badge-seg:last-child {
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+}
+
+/* Subtle per-segment tint so the two halves read as red / purple. */
+.prism-badge-seg--credibility,
+.prism-badge-seg--authenticity {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--prism-seg-color) 12%, transparent),
+    transparent
+  );
+}
+
+.prism-badge-seg--neutral {
+  color: var(--prism-text-dim);
+}
+
+.prism-badge-ico {
+  font-size: 10px;
+  line-height: 1;
+  display: inline-block;
+}
+
+.prism-badge-lbl {
+  color: var(--prism-text);
+}
+
+.prism-badge--neutral .prism-badge-lbl,
+.prism-badge--error .prism-badge-lbl,
+.prism-badge--scanning .prism-badge-lbl {
+  color: var(--prism-text-dim);
+}
+
+.prism-badge-pct {
+  color: var(--prism-text-dim);
+  font-weight: 600;
+}
+
+.prism-badge-dots {
+  color: var(--prism-scanning);
+}
+
+/* Thin divider between the two segments. */
+.prism-badge-divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 4px 0;
+  background: var(--prism-border);
+}
+
+/* ---------------------------------------------------------------------------
+ * Scanning placeholder — gentle pulse.
+ * ------------------------------------------------------------------------- */
+@keyframes prism-badge-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+.prism-badge-pulse {
+  animation: prism-badge-pulse 1.3s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------------------------
+ * Hover tooltip — dark breakdown card anchored below/left of the badge.
+ * Right edge aligns to the badge's right edge so it never overflows offscreen
+ * on the right. Hidden until the badge is hovered/focused.
+ * ------------------------------------------------------------------------- */
+.prism-bt {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;             /* anchor right edge to the badge's right edge */
+  left: auto;
+
+  width: 300px;
+  max-height: 340px;
+  overflow-y: auto;
+  box-sizing: border-box;
+
+  padding: 12px 13px;
+  background: var(--prism-bg-panel);
+  border: 1px solid var(--prism-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--prism-text);
+  text-align: left;
+
+  /* Hidden by default; revealed on hover/focus of the badge. */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0s linear 0.12s;
+  z-index: 1;
+}
+
+.prism-badge:hover .prism-bt,
+.prism-badge:focus-within .prism-bt {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0s;
+}
+
+/* Section blocks (credibility / authenticity). */
+.prism-bt-section {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--prism-border);
+}
+.prism-bt-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 4px;
+}
+
+.prism-bt-head {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+
+.prism-bt-summary {
+  margin: 0 0 8px;
+  color: var(--prism-text);
+}
+
+.prism-bt-note {
+  margin: 6px 0 0;
+  color: var(--prism-text-dim);
+  font-style: italic;
+  font-size: 11px;
+}
+
+.prism-bt-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--prism-text-dim);
+  margin: 8px 0 5px;
+}
+
+/* Reasons / signals list — color-coded by severity via a left border. */
+.prism-bt-reasons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.prism-bt-reason {
+  padding: 4px 0 4px 9px;
+  margin: 0 0 5px;
+  border-left: 3px solid var(--prism-border);
+  color: var(--prism-text);
+  font-size: 11.5px;
+}
+.prism-bt-reason:last-child { margin-bottom: 0; }
+
+.prism-bt-sev--high { border-left-color: var(--prism-fake); }
+.prism-bt-sev--med  { border-left-color: var(--prism-accent); }
+.prism-bt-sev--low  { border-left-color: var(--prism-border); }
+
+.prism-bt-cat {
+  font-weight: 700;
+  color: var(--prism-accent);
+}
+
+/* Top-word chips. */
+.prism-bt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.prism-bt-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--prism-border);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+/* "supports" chips get an inline border/text color (verdict color) from JS;
+ * this just gives them a faint backing. "opposes" chips stay muted. */
+.prism-bt-chip--supports {
+  background: rgba(63, 182, 201, 0.06);
+}
+.prism-bt-chip--opposes {
+  color: var(--prism-text-dim);
+  background: transparent;
+  opacity: 0.8;
+}
+
+/* Footer disclaimer. */
+.prism-bt-foot {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--prism-border);
+  font-size: 10px;
+  color: var(--prism-text-dim);
+  letter-spacing: 0.02em;
+}
+
+/* Scrollbar styling within the tooltip (WebKit/Chromium). */
+.prism-bt::-webkit-scrollbar { width: 8px; }
+.prism-bt::-webkit-scrollbar-thumb {
+  background: var(--prism-border);
+  border-radius: 8px;
+}
+.prism-bt::-webkit-scrollbar-track { background: transparent; }

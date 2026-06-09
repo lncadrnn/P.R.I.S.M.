@@ -117,4 +117,10 @@ class LIMETextExplainer:
             "summary": pattern_result["summary"],
             "reasons": pattern_result["reasons"],
             "top_words": top_words,
+            # Wire-ready contract for the extension's "Verified Source Links"
+            # panel. Populated once the fact-check retrieval layer (Vera Files,
+            # AFP, GMA, ABS-CBN matching) lands; empty until then so the UI can
+            # render a clean "no matched sources yet" state without fake data.
+            # Each entry: {"title": str, "url": str, "publisher": str}.
+            "sources": [],
         }
