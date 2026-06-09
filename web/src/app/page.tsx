@@ -1769,7 +1769,7 @@ export default function PrismLanding() {
 
         {/* Footer Meta & Copyrights */}
         <div className="relative z-10 border-t border-slate-200/60 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-semibold text-slate-500 max-w-6xl mx-auto w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-left">
+          <div className="flex flex-col items-center sm:flex-row sm:items-center gap-2 sm:gap-3 text-center sm:text-left">
             <div className="flex items-center gap-3">
               <svg viewBox="0 0 100 100" className="w-6 h-6 fill-none stroke-2">
                 <polygon points="50,15 85,80 15,80" className="stroke-[#0077BE]" />
