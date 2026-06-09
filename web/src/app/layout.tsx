@@ -42,7 +42,7 @@ export default function RootLayout({
       lang="en"
       className={`${plusJakartaSans.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#FDFBF7] text-slate-900 overflow-x-hidden selection:bg-[#3CC4DB]/30 selection:text-slate-900">
+      <body className="min-h-full flex flex-col bg-theme-bg text-theme-text overflow-x-hidden selection:bg-[#3CC4DB]/30 selection:text-slate-900">
         {children}
       </body>
     </html>

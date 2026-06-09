@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-serif), Georgia, serif;
+  
+  --color-theme-bg: var(--background);
+  --color-theme-text: var(--foreground);
 }
 
 :root {
@@ -10,10 +15,16 @@
   --foreground: #0f172a;
 }
 
+.dark {
+  --background: #0B0F19;
+  --foreground: #F8FAFC;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Custom scrollbar and Lenis smooth scrolling rules */
